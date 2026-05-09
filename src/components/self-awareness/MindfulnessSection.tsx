@@ -245,15 +245,15 @@ function ExerciseCard({
       <button
         type="button"
         onClick={onSelect}
-        className={`w-full rounded-3xl border p-4 text-left transition duration-200 ${
+        className={`w-full rounded-2xl border p-4 text-left transition duration-200 ${
           isCompleted
             ? "border-green-200 bg-green-50"
-            : "border-black/10 bg-white/90 hover:-translate-y-0.5 hover:shadow-md"
+            : "border-black/5 bg-white hover:-translate-y-0.5 hover:shadow-sm"
         }`}
       >
         <div className="flex items-center gap-4">
           <div
-            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${exercise.accent} text-2xl`}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-2xl"
           >
             {isCompleted ? "✅" : exercise.emoji}
           </div>
@@ -283,10 +283,10 @@ function ExerciseCard({
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-black/10 bg-white shadow-sm">
-      <div className={`bg-gradient-to-r ${exercise.accent} p-5`}>
+    <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+      <div className="bg-slate-50 border-b border-slate-100 p-5">
         <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-3xl shadow-sm">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">
             {exercise.emoji}
           </div>
           <div className="flex-1">
@@ -302,7 +302,7 @@ function ExerciseCard({
             <span className="font-medium text-slate-700">Timer</span>
             <span className="font-semibold text-slate-900">{formatTime(timeLeft)}</span>
           </div>
-          <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200">
+          <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
             <div
               className={`h-full rounded-full ${exercise.progress} transition-all duration-1000`}
               style={{ width: `${progressPercent}%` }}
@@ -408,190 +408,205 @@ export function MindfulnessSection({ headingId }: Props) {
   const progressPercent = (completedExercises.length / exercises.length) * 100;
 
   return (
-    <div className="relative z-10 mx-auto max-w-4xl space-y-12 px-4 py-8 pointer-events-auto">
-      <section aria-labelledby={headingId}>
-        <div className="mb-3">
-          <h2 id={headingId} className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-            10+ MINI MINDFULNESS EXERCISES
-          </h2>
-        </div>
+    <div className="relative z-10 mx-auto max-w-2xl px-4 py-12 pointer-events-auto">
+      
+      {/* Centered Heading */}
+      <div className="mb-8 text-center">
+        {/* MATCHED TEAMMATES: Applied font-carmensin and reduced size to text-xl sm:text-2xl */}
+        <h2 id={headingId} className="text-xl sm:text-2xl font-bold tracking-widest text-[#3a648b] uppercase font-carmensin">
+          10+ MINI MINDFULNESS EXERCISES
+        </h2>
+      </div>
 
-        <p className="mb-5 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-          Try these quick exercises to practice being present. Each one takes just a few minutes and
-          helps build focus, calm, and self-awareness.
-        </p>
-
-        <div className="mb-6 rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-semibold text-slate-900">Your Progress</span>
-            <span className="text-sm text-slate-600">
-              {completedExercises.length} of {exercises.length} completed
-            </span>
-          </div>
-          <div className="h-3 w-full overflow-hidden rounded-full bg-white">
-            <div
-              className="h-full rounded-full bg-blue-600 transition-all duration-300"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {exercises.map((exercise) => (
-            <ExerciseCard
-              key={exercise.id}
-              exercise={exercise}
-              isActive={activeExercise === exercise.id}
-              onSelect={() =>
-                setActiveExercise((prev) => (prev === exercise.id ? null : exercise.id))
-              }
-              isCompleted={completedExercises.includes(exercise.id)}
-              onComplete={() => handleComplete(exercise.id)}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <h3 className="mb-2 text-2xl font-bold text-slate-900">MINDFULNESS REFLECTION</h3>
-        <p className="mb-6 text-sm leading-7 text-slate-600 sm:text-base">
-          After trying an exercise, take a moment to reflect on how it felt.
-        </p>
-
-        <div className="space-y-6 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
-          <div>
-            <label className="mb-3 block text-sm font-semibold text-slate-900">
-              How did the exercise make you feel?
-            </label>
-            <p className="mb-3 text-xs text-slate-500">Select all that apply:</p>
-
-            <div className="flex flex-wrap gap-2">
-              {reflectionPrompts.map((prompt) => {
-                const selected = selectedPrompts.includes(prompt);
-
-                return (
-                  <button
-                    key={prompt}
-                    type="button"
-                    onClick={() =>
-                      setSelectedPrompts((prev) =>
-                        prev.includes(prompt)
-                          ? prev.filter((p) => p !== prompt)
-                          : [...prev, prompt]
-                      )
-                    }
-                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                      selected
-                        ? "bg-slate-900 text-white"
-                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                    }`}
-                  >
-                    {prompt}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-3 block text-sm font-semibold text-slate-900">
-              Write about your experience:
-            </label>
-            <textarea
-              value={reflection}
-              onChange={(e) => setReflection(e.target.value)}
-              placeholder="What did you notice during the exercise? How do you feel now compared to before?"
-              className="min-h-[130px] w-full rounded-2xl border border-slate-300 p-4 text-sm text-slate-800 outline-none transition focus:border-slate-900"
-            />
-          </div>
-
-          <div>
-            <label className="mb-3 block text-sm font-semibold text-slate-900">
-              Which exercise would you like to practice daily?
-            </label>
-
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {exercises.slice(0, 6).map((exercise) => {
-                const selected = favoriteExercise === exercise.title;
-
-                return (
-                  <button
-                    key={exercise.id}
-                    type="button"
-                    onClick={() => setFavoriteExercise(exercise.title)}
-                    className={`flex items-center gap-3 rounded-2xl p-3 text-left transition ${
-                      selected
-                        ? "bg-slate-900 text-white"
-                        : "bg-slate-100 text-slate-800 hover:bg-slate-200"
-                    }`}
-                  >
-                    <span className="text-lg">{exercise.emoji}</span>
-                    <span className="truncate text-sm font-medium">{exercise.title}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h3 className="mb-2 text-2xl font-bold text-slate-900">WHY MINDFULNESS MATTERS</h3>
-        <p className="mb-6 text-sm leading-7 text-slate-600 sm:text-base">
-          Regular mindfulness practice can improve focus, reduce stress, and help you respond more calmly.
-        </p>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-3xl border-l-4 border-emerald-500 bg-white p-5 shadow-sm">
-            <h4 className="mb-2 font-semibold text-slate-900">Better Focus</h4>
-            <p className="text-sm leading-6 text-slate-600">
-              Mindfulness trains your brain to concentrate on one thing at a time.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border-l-4 border-blue-500 bg-white p-5 shadow-sm">
-            <h4 className="mb-2 font-semibold text-slate-900">Less Stress</h4>
-            <p className="text-sm leading-6 text-slate-600">
-              Taking mindful pauses helps calm your nervous system and reduce anxiety.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border-l-4 border-amber-500 bg-white p-5 shadow-sm">
-            <h4 className="mb-2 font-semibold text-slate-900">More Patience</h4>
-            <p className="text-sm leading-6 text-slate-600">
-              Mindfulness helps you respond thoughtfully instead of reacting impulsively.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border-l-4 border-rose-500 bg-white p-5 shadow-sm">
-            <h4 className="mb-2 font-semibold text-slate-900">Greater Happiness</h4>
-            <p className="text-sm leading-6 text-slate-600">
-              Being present helps you appreciate small moments and feel more content.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="pb-12">
-        <div className="rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm">
-          <h3 className="mb-1 text-lg font-bold text-slate-900">7-Day Mindfulness Challenge</h3>
-          <p className="mb-4 text-sm leading-6 text-slate-600">
-            Try one exercise each day for a week. Notice how your awareness grows.
+      {/* Main unified card wrapper */}
+      <div className="rounded-[2rem] border border-blue-50/50 bg-white/95 p-6 sm:p-10 shadow-sm space-y-12">
+        
+        <section aria-labelledby={headingId}>
+          <p className="mb-6 text-sm leading-7 text-slate-600 sm:text-base">
+            Try these quick exercises to practice being present. Each one takes just a few minutes and
+            helps build focus, calm, and self-awareness.
           </p>
 
-          <button
-            type="button"
-            onClick={() => setChallengeStarted(true)}
-            className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
-              challengeStarted
-                ? "bg-green-600 text-white hover:bg-green-700"
-                : "bg-slate-900 text-white hover:bg-slate-800"
-            }`}
-          >
-            {challengeStarted ? "Challenge Started" : "Start Challenge"}
-          </button>
-        </div>
-      </section>
+          <div className="mb-6 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 shadow-sm">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-900">Your Progress</span>
+              <span className="text-sm text-slate-600">
+                {completedExercises.length} of {exercises.length} completed
+              </span>
+            </div>
+            <div className="h-3 w-full overflow-hidden rounded-full bg-white">
+              <div
+                className="h-full rounded-full bg-blue-600 transition-all duration-300"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {exercises.map((exercise) => (
+              <ExerciseCard
+                key={exercise.id}
+                exercise={exercise}
+                isActive={activeExercise === exercise.id}
+                onSelect={() =>
+                  setActiveExercise((prev) => (prev === exercise.id ? null : exercise.id))
+                }
+                isCompleted={completedExercises.includes(exercise.id)}
+                onComplete={() => handleComplete(exercise.id)}
+              />
+            ))}
+          </div>
+        </section>
+
+        <hr className="border-slate-100" />
+
+        <section>
+          {/* MATCHED TEAMMATES: Applied font-carmensin, specific blue color, and adjusted size */}
+          <h3 className="mb-4 text-xl font-medium text-[#3a648b] font-carmensin">Mindfulness Reflection</h3>
+          <p className="mb-6 text-sm leading-7 text-slate-600">
+            After trying an exercise, take a moment to reflect on how it felt.
+          </p>
+
+          <div className="space-y-6 rounded-3xl bg-slate-50 p-6">
+            <div>
+              <label className="mb-3 block text-sm font-semibold text-slate-900">
+                How did the exercise make you feel?
+              </label>
+              <p className="mb-3 text-xs text-slate-500">Select all that apply:</p>
+
+              <div className="flex flex-wrap gap-2">
+                {reflectionPrompts.map((prompt) => {
+                  const selected = selectedPrompts.includes(prompt);
+
+                  return (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() =>
+                        setSelectedPrompts((prev) =>
+                          prev.includes(prompt)
+                            ? prev.filter((p) => p !== prompt)
+                            : [...prev, prompt]
+                        )
+                      }
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                        selected
+                          ? "bg-slate-900 text-white"
+                          : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-200"
+                      }`}
+                    >
+                      {prompt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-3 block text-sm font-semibold text-slate-900">
+                Write about your experience:
+              </label>
+              <textarea
+                value={reflection}
+                onChange={(e) => setReflection(e.target.value)}
+                placeholder="What did you notice during the exercise? How do you feel now compared to before?"
+                className="min-h-[130px] w-full rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-800 outline-none transition focus:border-slate-900"
+              />
+            </div>
+
+            <div>
+              <label className="mb-3 block text-sm font-semibold text-slate-900">
+                Which exercise would you like to practice daily?
+              </label>
+
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {exercises.slice(0, 6).map((exercise) => {
+                  const selected = favoriteExercise === exercise.title;
+
+                  return (
+                    <button
+                      key={exercise.id}
+                      type="button"
+                      onClick={() => setFavoriteExercise(exercise.title)}
+                      className={`flex items-center gap-3 rounded-2xl p-3 text-left transition ${
+                        selected
+                          ? "bg-slate-900 text-white"
+                          : "bg-white text-slate-800 border border-slate-200 hover:bg-slate-100"
+                      }`}
+                    >
+                      <span className="text-lg">{exercise.emoji}</span>
+                      <span className="truncate text-xs font-medium">{exercise.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <hr className="border-slate-100" />
+
+        <section>
+          {/* MATCHED TEAMMATES: Applied font-carmensin, specific blue color, and adjusted size */}
+          <h3 className="mb-4 text-xl font-medium text-[#3a648b] font-carmensin">Why Mindfulness Matters</h3>
+          <p className="mb-6 text-sm leading-7 text-slate-600">
+            Regular mindfulness practice can improve focus, reduce stress, and help you respond more calmly.
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border-l-4 border-emerald-500 bg-slate-50 p-5">
+              <h4 className="mb-2 font-semibold text-slate-900">Better Focus</h4>
+              <p className="text-sm leading-6 text-slate-600">
+                Mindfulness trains your brain to concentrate on one thing at a time.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border-l-4 border-blue-500 bg-slate-50 p-5">
+              <h4 className="mb-2 font-semibold text-slate-900">Less Stress</h4>
+              <p className="text-sm leading-6 text-slate-600">
+                Taking mindful pauses helps calm your nervous system and reduce anxiety.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border-l-4 border-amber-500 bg-slate-50 p-5">
+              <h4 className="mb-2 font-semibold text-slate-900">More Patience</h4>
+              <p className="text-sm leading-6 text-slate-600">
+                Mindfulness helps you respond thoughtfully instead of reacting impulsively.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border-l-4 border-rose-500 bg-slate-50 p-5">
+              <h4 className="mb-2 font-semibold text-slate-900">Greater Happiness</h4>
+              <p className="text-sm leading-6 text-slate-600">
+                Being present helps you appreciate small moments and feel more content.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="pb-4">
+          <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm">
+            {/* MATCHED TEAMMATES: Applied font-carmensin, specific blue color, and adjusted size */}
+            <h3 className="mb-2 text-lg font-medium text-[#3a648b] font-carmensin">7-Day Mindfulness Challenge</h3>
+            <p className="mb-4 text-sm leading-6 text-slate-600">
+              Try one exercise each day for a week. Notice how your awareness grows.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setChallengeStarted(true)}
+              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                challengeStarted
+                  ? "bg-green-600 text-white hover:bg-green-700"
+                  : "bg-slate-900 text-white hover:bg-slate-800"
+              }`}
+            >
+              {challengeStarted ? "Challenge Started" : "Start Challenge"}
+            </button>
+          </div>
+        </section>
+
+      </div>
     </div>
   );
 }
