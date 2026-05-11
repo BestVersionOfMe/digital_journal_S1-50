@@ -105,6 +105,28 @@ function parseStored(raw: string | null): JournalState {
   try {
     const data = JSON.parse(raw) as Record<string, unknown>;
     const ratings = { ...base.ratings, ...(data.ratings as JournalState["ratings"]) };
+    if (
+      ratings.feedback == null &&
+      data.ratings &&
+      typeof data.ratings === "object" &&
+      typeof (data.ratings as Record<string, unknown>).seek_feedback === "string"
+    ) {
+      ratings.feedback = (data.ratings as Record<string, string>).seek_feedback;
+    } else if (
+      ratings.feedback == null &&
+      data.ratings &&
+      typeof data.ratings === "object" &&
+      typeof (data.ratings as Record<string, unknown>).giving_feedback === "string"
+    ) {
+      ratings.feedback = (data.ratings as Record<string, string>).giving_feedback;
+    } else if (
+      ratings.feedback == null &&
+      data.ratings &&
+      typeof data.ratings === "object" &&
+      typeof (data.ratings as Record<string, unknown>).honesty === "string"
+    ) {
+      ratings.feedback = (data.ratings as Record<string, string>).honesty;
+    }
     const compassion = { ...base.compassion, ...(data.compassion as JournalState["compassion"]) };
 
     let reflectionArea = base.reflectionArea;
@@ -197,18 +219,23 @@ function parseStored(raw: string | null): JournalState {
     let seekingFeedbackText = base.seekingFeedbackText;
     if (typeof data.seekingFeedbackText === "string") seekingFeedbackText = data.seekingFeedbackText;
 
-    let honestyGivingFeedbackText = base.honestyGivingFeedbackText;
-    if (typeof data.honestyGivingFeedbackText === "string")
-      honestyGivingFeedbackText = data.honestyGivingFeedbackText;
+    let givingFeedbackText = base.givingFeedbackText;
+    if (typeof data.givingFeedbackText === "string") {
+      givingFeedbackText = data.givingFeedbackText;
+    } else if (typeof data.honestyGivingFeedbackText === "string") {
+      givingFeedbackText = data.honestyGivingFeedbackText;
+    }
 
     let seekingFeedbackSubmitted = base.seekingFeedbackSubmitted;
     if (typeof data.seekingFeedbackSubmitted === "boolean") {
       seekingFeedbackSubmitted = data.seekingFeedbackSubmitted;
     }
 
-    let honestyGivingFeedbackSubmitted = base.honestyGivingFeedbackSubmitted;
-    if (typeof data.honestyGivingFeedbackSubmitted === "boolean") {
-      honestyGivingFeedbackSubmitted = data.honestyGivingFeedbackSubmitted;
+    let givingFeedbackSubmitted = base.givingFeedbackSubmitted;
+    if (typeof data.givingFeedbackSubmitted === "boolean") {
+      givingFeedbackSubmitted = data.givingFeedbackSubmitted;
+    } else if (typeof data.honestyGivingFeedbackSubmitted === "boolean") {
+      givingFeedbackSubmitted = data.honestyGivingFeedbackSubmitted;
     }
 
     return {
@@ -223,8 +250,8 @@ function parseStored(raw: string | null): JournalState {
       reflectionWeeks,
       seekingFeedbackText,
       seekingFeedbackSubmitted,
-      honestyGivingFeedbackText,
-      honestyGivingFeedbackSubmitted,
+      givingFeedbackText,
+      givingFeedbackSubmitted,
     } satisfies JournalState;
   } catch {
     return base;
@@ -510,9 +537,9 @@ export function useJournalStorage() {
     });
   }, []);
 
-  const setHonestyGivingFeedbackText = useCallback((next: string) => {
+  const setGivingFeedbackText = useCallback((next: string) => {
     setState((prev) => {
-      const updated = { ...prev, honestyGivingFeedbackText: next };
+      const updated = { ...prev, givingFeedbackText: next };
       if (typeof window !== "undefined") {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       }
@@ -530,9 +557,9 @@ export function useJournalStorage() {
     });
   }, []);
 
-  const setHonestyGivingFeedbackSubmitted = useCallback((submitted: boolean) => {
+  const setGivingFeedbackSubmitted = useCallback((submitted: boolean) => {
     setState((prev) => {
-      const updated = { ...prev, honestyGivingFeedbackSubmitted: submitted };
+      const updated = { ...prev, givingFeedbackSubmitted: submitted };
       if (typeof window !== "undefined") {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       }
@@ -558,8 +585,8 @@ export function useJournalStorage() {
     updateReflectionMeasure,
     submitReflectionWeek,
     setSeekingFeedbackText,
-    setHonestyGivingFeedbackText,
+    setGivingFeedbackText,
     setSeekingFeedbackSubmitted,
-    setHonestyGivingFeedbackSubmitted,
+    setGivingFeedbackSubmitted,
   };
 }
