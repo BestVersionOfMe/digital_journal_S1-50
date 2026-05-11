@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { JOURNAL_GLASS_BORDER, JOURNAL_GLASS_PANEL_BASE } from "@/lib/self-awareness";
 
 type Props = { headingId: string };
 
@@ -19,7 +20,6 @@ const exercises = [
       "Exhale slowly and repeat 3 times",
     ],
     emoji: "🧍",
-    accent: "from-emerald-100 to-emerald-50",
     badge: "bg-emerald-100 text-emerald-700",
     progress: "bg-emerald-500",
   },
@@ -38,7 +38,6 @@ const exercises = [
       "Continue for all five fingers",
     ],
     emoji: "✋",
-    accent: "from-blue-100 to-blue-50",
     badge: "bg-blue-100 text-blue-700",
     progress: "bg-blue-500",
   },
@@ -56,7 +55,6 @@ const exercises = [
       "Switch to the other leg and repeat",
     ],
     emoji: "🦶",
-    accent: "from-amber-100 to-amber-50",
     badge: "bg-amber-100 text-amber-700",
     progress: "bg-amber-500",
   },
@@ -74,7 +72,6 @@ const exercises = [
       "Notice the texture as you eat",
     ],
     emoji: "🍎",
-    accent: "from-rose-100 to-rose-50",
     badge: "bg-rose-100 text-rose-700",
     progress: "bg-rose-500",
   },
@@ -92,7 +89,6 @@ const exercises = [
       "Find a third object and notice details about each",
     ],
     emoji: "🎨",
-    accent: "from-purple-100 to-purple-50",
     badge: "bg-purple-100 text-purple-700",
     progress: "bg-purple-500",
   },
@@ -110,7 +106,6 @@ const exercises = [
       "Repeat this cycle 3 times",
     ],
     emoji: "🌬️",
-    accent: "from-sky-100 to-sky-50",
     badge: "bg-sky-100 text-sky-700",
     progress: "bg-sky-500",
   },
@@ -128,7 +123,6 @@ const exercises = [
       "Let the feeling stay with you",
     ],
     emoji: "😊",
-    accent: "from-pink-100 to-pink-50",
     badge: "bg-pink-100 text-pink-700",
     progress: "bg-pink-500",
   },
@@ -146,7 +140,6 @@ const exercises = [
       "Take it all in for one full minute",
     ],
     emoji: "👀",
-    accent: "from-green-100 to-green-50",
     badge: "bg-green-100 text-green-700",
     progress: "bg-green-500",
   },
@@ -164,7 +157,6 @@ const exercises = [
       "Notice sounds you had not heard before",
     ],
     emoji: "👂",
-    accent: "from-orange-100 to-orange-50",
     badge: "bg-orange-100 text-orange-700",
     progress: "bg-orange-500",
   },
@@ -182,7 +174,6 @@ const exercises = [
       "Feel the words within you",
     ],
     emoji: "✨",
-    accent: "from-indigo-100 to-indigo-50",
     badge: "bg-indigo-100 text-indigo-700",
     progress: "bg-indigo-500",
   },
@@ -408,60 +399,61 @@ export function MindfulnessSection({ headingId }: Props) {
   const progressPercent = (completedExercises.length / exercises.length) * 100;
 
   return (
-    <div className="relative z-10 mx-auto max-w-2xl px-4 py-12 pointer-events-auto">
-      
-      {/* Centered Heading */}
-      <div className="mb-8 text-center">
-        {/* MATCHED TEAMMATES: Applied font-carmensin and reduced size to text-xl sm:text-2xl */}
-        <h2 id={headingId} className="text-xl sm:text-2xl font-bold tracking-widest text-[#3a648b] uppercase font-carmensin">
-          10+ MINI MINDFULNESS EXERCISES
-        </h2>
-      </div>
+    <div className="mx-auto max-w-[40rem] px-5 pb-16 pt-8 sm:max-w-[42rem] sm:px-8 sm:pb-20 sm:pt-10">
+      <section
+        className={`relative ${JOURNAL_GLASS_PANEL_BASE} ${JOURNAL_GLASS_BORDER.mindfulness} space-y-10`}
+        aria-labelledby={headingId}
+      >
+        <div className="mb-8 text-center">
+          <h2
+            id={headingId}
+            className="font-display text-center text-[1.25rem] font-semibold tracking-[0.04em] text-bvm-title sm:text-[1.375rem]"
+          >
+            10+ MINI MINDFULNESS EXERCISES
+          </h2>
+        </div>
 
-      {/* Main unified card wrapper */}
-      <div className="rounded-[2rem] border border-blue-50/50 bg-white/95 p-6 sm:p-10 shadow-sm space-y-12">
-        
-        <section aria-labelledby={headingId}>
-          <p className="mb-6 text-sm leading-7 text-slate-600 sm:text-base">
-            Try these quick exercises to practice being present. Each one takes just a few minutes and
-            helps build focus, calm, and self-awareness.
-          </p>
+        <div className="space-y-12">
+          <div>
+            <p className="mb-6 text-sm leading-7 text-slate-600 sm:text-base">
+              Try these quick exercises to practice being present. Each one takes just a few minutes and
+              helps build focus, calm, and self-awareness.
+            </p>
 
-          <div className="mb-6 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 shadow-sm">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-900">Your Progress</span>
-              <span className="text-sm text-slate-600">
-                {completedExercises.length} of {exercises.length} completed
-              </span>
+            <div className="mb-6 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 shadow-sm">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-900">Your Progress</span>
+                <span className="text-sm text-slate-600">
+                  {completedExercises.length} of {exercises.length} completed
+                </span>
+              </div>
+              <div className="h-3 w-full overflow-hidden rounded-full bg-white">
+                <div
+                  className="h-full rounded-full bg-blue-600 transition-all duration-300"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
             </div>
-            <div className="h-3 w-full overflow-hidden rounded-full bg-white">
-              <div
-                className="h-full rounded-full bg-blue-600 transition-all duration-300"
-                style={{ width: `${progressPercent}%` }}
-              />
+
+            <div className="space-y-3">
+              {exercises.map((exercise) => (
+                <ExerciseCard
+                  key={exercise.id}
+                  exercise={exercise}
+                  isActive={activeExercise === exercise.id}
+                  onSelect={() =>
+                    setActiveExercise((prev) => (prev === exercise.id ? null : exercise.id))
+                  }
+                  isCompleted={completedExercises.includes(exercise.id)}
+                  onComplete={() => handleComplete(exercise.id)}
+                />
+              ))}
             </div>
           </div>
 
-          <div className="space-y-3">
-            {exercises.map((exercise) => (
-              <ExerciseCard
-                key={exercise.id}
-                exercise={exercise}
-                isActive={activeExercise === exercise.id}
-                onSelect={() =>
-                  setActiveExercise((prev) => (prev === exercise.id ? null : exercise.id))
-                }
-                isCompleted={completedExercises.includes(exercise.id)}
-                onComplete={() => handleComplete(exercise.id)}
-              />
-            ))}
-          </div>
-        </section>
-
-        <hr className="border-slate-100" />
+          <hr className="border-slate-100" />
 
         <section>
-          {/* MATCHED TEAMMATES: Applied font-carmensin, specific blue color, and adjusted size */}
           <h3 className="mb-4 text-xl font-medium text-[#3a648b] font-carmensin">Mindfulness Reflection</h3>
           <p className="mb-6 text-sm leading-7 text-slate-600">
             After trying an exercise, take a moment to reflect on how it felt.
@@ -547,7 +539,6 @@ export function MindfulnessSection({ headingId }: Props) {
         <hr className="border-slate-100" />
 
         <section>
-          {/* MATCHED TEAMMATES: Applied font-carmensin, specific blue color, and adjusted size */}
           <h3 className="mb-4 text-xl font-medium text-[#3a648b] font-carmensin">Why Mindfulness Matters</h3>
           <p className="mb-6 text-sm leading-7 text-slate-600">
             Regular mindfulness practice can improve focus, reduce stress, and help you respond more calmly.
@@ -586,7 +577,6 @@ export function MindfulnessSection({ headingId }: Props) {
 
         <section className="pb-4">
           <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm">
-            {/* MATCHED TEAMMATES: Applied font-carmensin, specific blue color, and adjusted size */}
             <h3 className="mb-2 text-lg font-medium text-[#3a648b] font-carmensin">7-Day Mindfulness Challenge</h3>
             <p className="mb-4 text-sm leading-6 text-slate-600">
               Try one exercise each day for a week. Notice how your awareness grows.
@@ -606,7 +596,8 @@ export function MindfulnessSection({ headingId }: Props) {
           </div>
         </section>
 
-      </div>
+        </div>
+      </section>
     </div>
   );
 }
