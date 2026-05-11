@@ -632,8 +632,8 @@ export function SelfReflectionSection({ headingId }: Props) {
                   onTokensChange={setReflectionWordTokens}
                   onCustomPoolChange={setReflectionCustomWordPool}
                     onCustomWordRemove={(word) => {
-                      setReflectionCustomWordPool(state.reflectionCustomWordPool.filter((w) => w !== word));
                       setReflectionWordTokens(state.reflectionWordTokens.filter((w) => w !== word));
+                      setReflectionCustomWordPool(state.reflectionCustomWordPool.filter((w) => w !== word));
                     }}
                 />
               </div>
