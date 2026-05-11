@@ -4,13 +4,12 @@ import { useState } from "react";
 import { useJournalStorage } from "@/hooks/useJournalStorage";
 import { JOURNAL_GLASS_BORDER, JOURNAL_GLASS_PANEL_BASE } from "@/lib/self-awareness";
 
-type Props = { headingId: string };
+type Props = { headingId: string; embedded?: boolean };
 
 const WHO_OPTIONS = [
   { id: "Mentor / Teacher", icon: "👨‍🏫", label: "Mentor" },
   { id: "Manager / Supervisor", icon: "💼", label: "Manager" },
   { id: "Teammate / Peer", icon: "👥", label: "Teammate" },
-  { id: "Custom", icon: "✍️", label: "Custom..." },
 ];
 
 const QUESTION_DECK = [
@@ -44,13 +43,12 @@ function PencilIcon({ className }: { className?: string }) {
   );
 }
 
-export function SeekingFeedbackSection({ headingId }: Props) {
+export function SeekingFeedbackSection({ headingId, embedded = false }: Props) {
   const { state, setSeekingFeedbackText, setSeekingFeedbackSubmitted } = useJournalStorage();
 
 
   // 1: Who/What, 2: Question, 3: Draft
   const [subStep, setSubStep] = useState(1);
-  const [who, setWho] = useState("");
   const [customWho, setCustomWho] = useState("");
   const [what, setWhat] = useState("");
   const [selectedQ, setSelectedQ] = useState("");
@@ -58,7 +56,7 @@ export function SeekingFeedbackSection({ headingId }: Props) {
   const text = state.seekingFeedbackText;
   const locked = state.seekingFeedbackSubmitted && text.trim().length > 0;
 
-  const activeWho = who === "Custom" ? customWho : who;
+  const activeWho = customWho;
   const isInfoReady = activeWho.trim().length > 0 && what.trim().length > 0;
 
   const handleGenerate = () => {
@@ -92,15 +90,13 @@ export function SeekingFeedbackSection({ headingId }: Props) {
 
   const handleStartOver = () => {
     setSubStep(1);
-    setWho("");
     setCustomWho("");
     setWhat("");
     setSelectedQ("");
     setSeekingFeedbackText("");
   };
 
-  return (
-    <div className="mx-auto max-w-[40rem] px-5 pb-16 pt-8 sm:max-w-[42rem] sm:px-8 sm:pb-20 sm:pt-10">
+  const content = (
       <section
 
         className={`relative ${JOURNAL_GLASS_PANEL_BASE} ${JOURNAL_GLASS_BORDER.seekingFeedback} p-6 sm:p-8 min-h-[420px] transition-all duration-500`}
@@ -108,6 +104,9 @@ export function SeekingFeedbackSection({ headingId }: Props) {
       >
 
         <div className="pb-6">
+          <p className="font-display text-[0.85rem] font-semibold uppercase tracking-[0.14em] text-bvm-title">
+            Seeking Feedback
+          </p>
           <h2 className="text-[1.1rem] font-bold text-slate-800 tracking-tight">Craft your Feedback Request</h2>
           <p className="mt-1 text-[0.9rem] text-slate-500">{"Let's build a specific, actionable message."}</p>
         </div>
@@ -136,28 +135,32 @@ export function SeekingFeedbackSection({ headingId }: Props) {
               <div className="space-y-6 animate-fade-in">
                 <div>
                   <label className="block text-[0.95rem] font-semibold text-slate-800 mb-3">1. Who are you asking?</label>
-                  <div className="flex flex-wrap gap-2.5">
+                  <input
+                    type="text"
+                    placeholder="Enter name or role..."
+                    value={customWho}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setCustomWho(next);
+                    }}
+                    className="w-full rounded-xl border border-slate-200/80 bg-white/70 px-4 py-2.5 text-[0.9375rem] focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+                  />
+                  <div className="mt-3 flex flex-wrap gap-2.5">
                     {WHO_OPTIONS.map((opt) => (
                       <button
                         key={opt.id}
-                        onClick={() => setWho(who === opt.id ? "" : opt.id)}
-                        className={`flex items-center gap-2 rounded-full border px-4 py-2 text-[0.875rem] font-medium transition-all ${who === opt.id ? "border-[#7b8fd4] bg-[#7b8fd4]/10 text-[#5468b1]" : "border-slate-200/90 bg-white/60 text-slate-600 hover:bg-white"
+                        type="button"
+                        onClick={() => {
+                          const selected = customWho === opt.id;
+                          setCustomWho(selected ? "" : opt.id);
+                        }}
+                        className={`flex items-center gap-2 rounded-full border px-4 py-2 text-[0.875rem] font-medium transition-all ${customWho === opt.id ? "border-[#7b8fd4] bg-[#7b8fd4]/10 text-[#5468b1]" : "border-slate-200/90 bg-white/60 text-slate-600 hover:bg-white"
                           }`}
                       >
                         <span>{opt.icon}</span> {opt.label}
                       </button>
                     ))}
                   </div>
-                  {who === "Custom" && (
-                    <input
-                      type="text"
-                      autoFocus
-                      placeholder="Enter name or role..."
-                      value={customWho}
-                      onChange={(e) => setCustomWho(e.target.value)}
-                      className="mt-3 w-full max-w-sm rounded-lg border border-slate-200/80 bg-white/70 px-4 py-2.5 text-[0.9375rem] focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
-                    />
-                  )}
                 </div>
 
                 <div>
@@ -257,6 +260,13 @@ export function SeekingFeedbackSection({ headingId }: Props) {
           </div>
         )}
       </section>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <div className="mx-auto max-w-[40rem] px-5 pb-16 pt-8 sm:max-w-[42rem] sm:px-8 sm:pb-20 sm:pt-10">
+      {content}
     </div>
   );
 }

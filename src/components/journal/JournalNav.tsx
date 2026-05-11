@@ -1,6 +1,6 @@
 import { JOURNAL_NAV_ITEMS } from "@/lib/journal-nav";
 
-/** Six quick-jump links — full width strip directly under the hero banner. */
+/** Four quick-jump links: full width strip directly under the hero banner. */
 export function JournalNav() {
   return (
     <div className="w-full border-b border-slate-200/50 bg-gradient-to-b from-white/85 to-[#eef3f9]/95 shadow-[0_4px_24px_-12px_rgba(43,106,158,0.12)] backdrop-blur-sm">
@@ -8,7 +8,7 @@ export function JournalNav() {
         className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-8 sm:py-6 lg:px-14"
         aria-label="Self-Awareness sections"
       >
-        <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3">
+        <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
           {JOURNAL_NAV_ITEMS.map(({ id, label }) => (
             <li key={id}>
               <a

@@ -118,7 +118,7 @@ export function SelfCompassionSection() {
       setStep((s) => s + 1);
       return;
     }
-    document.getElementById("seeking-feedback")?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById("feedback")?.scrollIntoView({ behavior: "smooth" });
   }, [step, total]);
 
   const goBack = useCallback(() => {
