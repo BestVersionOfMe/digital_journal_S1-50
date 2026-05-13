@@ -24,3 +24,40 @@
     background-color: rgba(43, 106, 158, 0.12);
   }
 }
+
+@layer utilities {
+  @keyframes journal-celebrate-pop {
+    0% {
+      transform: scale(0.7) rotate(-10deg);
+      opacity: 0;
+    }
+    60% {
+      transform: scale(1.08) rotate(6deg);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+  }
+
+  @keyframes journal-confetti-float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 0.9;
+    }
+    50% {
+      transform: translateY(-4px) rotate(10deg);
+      opacity: 1;
+    }
+  }
+
+  .animate-journal-celebrate-pop {
+    animation: journal-celebrate-pop 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-journal-confetti-float {
+    animation: journal-confetti-float 1.8s ease-in-out infinite;
+  }
+}

@@ -11,7 +11,7 @@ import {
   type SelfCompassionWorkshopSnapshot,
 } from "@/lib/self-compassion-storage";
 
-/** Align with Seeking Feedback / Honesty / Self Reflection body & fields */
+/** Align with Seeking Feedback / Giving Feedback / Self Reflection body & fields */
 const scBody = "text-[0.9375rem] leading-[1.75] text-slate-600 sm:text-[1rem]";
 const scPrompt =
   "text-[0.95rem] font-semibold leading-snug text-slate-800 sm:text-[1rem]";
@@ -438,7 +438,7 @@ export default function SelfCompassion() {
                 {showReview ? "Hide my answers" : "Check my answers"}
               </button>
 
-              <Link href="/#seeking-feedback" className={`${scBtnPrimary} inline-flex items-center gap-2 px-8`}>
+              <Link href="/#feedback" className={`${scBtnPrimary} inline-flex items-center gap-2 px-8`}>
                 Go to next part <span aria-hidden>→</span>
               </Link>
             </div>
