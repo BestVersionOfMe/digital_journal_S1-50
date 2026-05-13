@@ -106,26 +106,28 @@ function parseStored(raw: string | null): JournalState {
     const data = JSON.parse(raw) as Record<string, unknown>;
     const ratings = { ...base.ratings, ...(data.ratings as JournalState["ratings"]) };
     if (
-      ratings.feedback == null &&
+      ratings.seek_feedback == null &&
       data.ratings &&
       typeof data.ratings === "object" &&
-      typeof (data.ratings as Record<string, unknown>).seek_feedback === "string"
+      typeof (data.ratings as Record<string, unknown>).feedback === "string"
     ) {
-      ratings.feedback = (data.ratings as Record<string, string>).seek_feedback;
-    } else if (
-      ratings.feedback == null &&
+      ratings.seek_feedback = (data.ratings as Record<string, string>).feedback;
+    }
+    if (
+      ratings.honesty == null &&
       data.ratings &&
       typeof data.ratings === "object" &&
       typeof (data.ratings as Record<string, unknown>).giving_feedback === "string"
     ) {
-      ratings.feedback = (data.ratings as Record<string, string>).giving_feedback;
-    } else if (
-      ratings.feedback == null &&
+      ratings.honesty = (data.ratings as Record<string, string>).giving_feedback;
+    }
+    if (
+      ratings.honesty == null &&
       data.ratings &&
       typeof data.ratings === "object" &&
-      typeof (data.ratings as Record<string, unknown>).honesty === "string"
+      typeof (data.ratings as Record<string, unknown>).feedback === "string"
     ) {
-      ratings.feedback = (data.ratings as Record<string, string>).honesty;
+      ratings.honesty = (data.ratings as Record<string, string>).feedback;
     }
     const compassion = { ...base.compassion, ...(data.compassion as JournalState["compassion"]) };
 

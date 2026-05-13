@@ -13,10 +13,12 @@ export const SEGMENTED_SOLID_BG = [
 ] as const;
 
 export const RATING_SKILLS: { id: string; label: string }[] = [
+  { id: "emotional_awareness", label: "Emotional Awareness" },
+  { id: "honesty", label: "Honesty" },
+  { id: "seek_feedback", label: "Seek Feedback" },
   { id: "self_compassion_skill", label: "Self Compassion" },
-  { id: "feedback", label: "Feedback" },
-  { id: "self_reflection", label: "Self Reflection" },
   { id: "mindfulness", label: "Mindfulness" },
+  { id: "self_reflection", label: "Self Reflection" },
 ];
 
 export type RatingVariant =
@@ -243,7 +245,7 @@ export type JournalState = {
 export function defaultJournalState(): JournalState {
   const ratings: Record<string, string | null> = {};
   for (const { id } of RATING_SKILLS) {
-    ratings[id] = id === "feedback" ? "3" : null;
+    ratings[id] = id === "seek_feedback" ? "3" : null;
   }
   const compassion: Record<string, string> = {};
   for (const { id } of COMPASSION_PROMPTS) {

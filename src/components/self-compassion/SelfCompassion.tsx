@@ -163,6 +163,7 @@ export default function SelfCompassion() {
   const resetEntireWorkshop = useCallback(() => {
     clearSelfCompassionWorkshop();
     applySnapshot(defaultSelfCompassionWorkshop());
+    setShowFeedback(false);
   }, [applySnapshot]);
 
   // === 💡 Dictionary Q1-5 promptchips ===
