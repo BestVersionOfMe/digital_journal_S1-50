@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { JOURNAL_GLASS_BORDER, JOURNAL_GLASS_PANEL_BASE } from "@/lib/self-awareness";
 
 type Props = { headingId: string };
 
@@ -20,6 +19,7 @@ const exercises = [
       "Exhale slowly and repeat 3 times",
     ],
     emoji: "🧍",
+    accent: "from-emerald-100 to-emerald-50",
     badge: "bg-emerald-100 text-emerald-700",
     progress: "bg-emerald-500",
   },
@@ -38,6 +38,7 @@ const exercises = [
       "Continue for all five fingers",
     ],
     emoji: "✋",
+    accent: "from-blue-100 to-blue-50",
     badge: "bg-blue-100 text-blue-700",
     progress: "bg-blue-500",
   },
@@ -55,6 +56,7 @@ const exercises = [
       "Switch to the other leg and repeat",
     ],
     emoji: "🦶",
+    accent: "from-amber-100 to-amber-50",
     badge: "bg-amber-100 text-amber-700",
     progress: "bg-amber-500",
   },
@@ -72,6 +74,7 @@ const exercises = [
       "Notice the texture as you eat",
     ],
     emoji: "🍎",
+    accent: "from-rose-100 to-rose-50",
     badge: "bg-rose-100 text-rose-700",
     progress: "bg-rose-500",
   },
@@ -89,6 +92,7 @@ const exercises = [
       "Find a third object and notice details about each",
     ],
     emoji: "🎨",
+    accent: "from-purple-100 to-purple-50",
     badge: "bg-purple-100 text-purple-700",
     progress: "bg-purple-500",
   },
@@ -106,6 +110,7 @@ const exercises = [
       "Repeat this cycle 3 times",
     ],
     emoji: "🌬️",
+    accent: "from-sky-100 to-sky-50",
     badge: "bg-sky-100 text-sky-700",
     progress: "bg-sky-500",
   },
@@ -123,6 +128,7 @@ const exercises = [
       "Let the feeling stay with you",
     ],
     emoji: "😊",
+    accent: "from-pink-100 to-pink-50",
     badge: "bg-pink-100 text-pink-700",
     progress: "bg-pink-500",
   },
@@ -140,6 +146,7 @@ const exercises = [
       "Take it all in for one full minute",
     ],
     emoji: "👀",
+    accent: "from-green-100 to-green-50",
     badge: "bg-green-100 text-green-700",
     progress: "bg-green-500",
   },
@@ -157,6 +164,7 @@ const exercises = [
       "Notice sounds you had not heard before",
     ],
     emoji: "👂",
+    accent: "from-orange-100 to-orange-50",
     badge: "bg-orange-100 text-orange-700",
     progress: "bg-orange-500",
   },
@@ -174,6 +182,7 @@ const exercises = [
       "Feel the words within you",
     ],
     emoji: "✨",
+    accent: "from-indigo-100 to-indigo-50",
     badge: "bg-indigo-100 text-indigo-700",
     progress: "bg-indigo-500",
   },
@@ -236,45 +245,32 @@ function ExerciseCard({
       <button
         type="button"
         onClick={onSelect}
-        className={`w-full rounded-2xl border p-4 text-left transition duration-200 ${
+        // Changed to a vertical layout (flex-col) to look like an app icon
+        className={`w-full h-full flex flex-col items-center justify-center rounded-[2rem] border p-4 text-center transition duration-200 ${
           isCompleted
             ? "border-green-200 bg-green-50"
-            : "border-black/5 bg-white hover:-translate-y-0.5 hover:shadow-sm"
+            : "border-slate-100 bg-white hover:-translate-y-1 hover:shadow-md"
         }`}
       >
-        <div className="flex items-center gap-4">
-          <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-2xl"
-          >
-            {isCompleted ? "✅" : exercise.emoji}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-semibold text-slate-900">{exercise.title}</h3>
-              {isCompleted && (
-                <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                  Done
-                </span>
-              )}
-            </div>
-
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={`rounded-full px-2 py-1 text-xs font-medium ${exercise.badge}`}>
-                {exercise.category}
-              </span>
-              <span className="text-xs text-slate-500">{exercise.duration} min</span>
-            </div>
-          </div>
-
-          <span className="text-xl text-slate-400">›</span>
+        <div
+          className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-2xl sm:text-3xl mb-3 shadow-sm"
+        >
+          {isCompleted ? "✅" : exercise.emoji}
         </div>
+        
+        <h3 className="font-semibold text-slate-900 text-xs sm:text-sm line-clamp-2 leading-tight">
+          {exercise.title}
+        </h3>
+        
+        <span className="mt-1 text-[10px] sm:text-xs text-slate-500 font-medium">
+          {exercise.duration} min
+        </span>
       </button>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm w-full">
       <div className="bg-slate-50 border-b border-slate-100 p-5">
         <div className="flex items-start gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">
@@ -381,7 +377,6 @@ export function MindfulnessSection({ headingId }: Props) {
   const [reflection, setReflection] = useState("");
   const [selectedPrompts, setSelectedPrompts] = useState<string[]>([]);
   const [favoriteExercise, setFavoriteExercise] = useState("");
-  const [challengeStarted, setChallengeStarted] = useState(false);
 
   const reflectionPrompts = [
     "I felt calm",
@@ -399,59 +394,73 @@ export function MindfulnessSection({ headingId }: Props) {
   const progressPercent = (completedExercises.length / exercises.length) * 100;
 
   return (
-    <div className="mx-auto max-w-[40rem] px-5 pb-16 pt-8 sm:max-w-[42rem] sm:px-8 sm:pb-20 sm:pt-10">
-      <section
-        className={`relative ${JOURNAL_GLASS_PANEL_BASE} ${JOURNAL_GLASS_BORDER.mindfulness} space-y-10`}
-        aria-labelledby={headingId}
-      >
-        <div className="mb-8 text-center">
-          <h2
-            id={headingId}
-            className="font-display text-center text-[1.25rem] font-semibold tracking-[0.04em] text-bvm-title sm:text-[1.375rem]"
-          >
-            10+ MINI MINDFULNESS EXERCISES
-          </h2>
-        </div>
+    <div className="relative z-10 mx-auto max-w-2xl px-4 py-12 pointer-events-auto">
+      
+      {/* Centered Heading */}
+      <div className="mb-8 text-center">
+        <h2 id={headingId} className="text-xl sm:text-2xl font-bold tracking-widest text-[#3a648b] uppercase font-carmensin">
+          10+ MINI MINDFULNESS EXERCISES
+        </h2>
+      </div>
 
-        <div className="space-y-12">
-          <div>
-            <p className="mb-6 text-sm leading-7 text-slate-600 sm:text-base">
-              Try these quick exercises to practice being present. Each one takes just a few minutes and
-              helps build focus, calm, and self-awareness.
-            </p>
+      {/* Main unified card wrapper */}
+      <div className="rounded-[2rem] border border-blue-50/50 bg-white/95 p-6 sm:p-10 shadow-sm space-y-12">
+        
+        <section aria-labelledby={headingId}>
+          <p className="mb-6 text-sm leading-7 text-slate-600 sm:text-base text-center">
+            Tap an exercise to practice being present. Each one takes just a few minutes and
+            helps build focus, calm, and self-awareness.
+          </p>
 
-            <div className="mb-6 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 shadow-sm">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-900">Your Progress</span>
-                <span className="text-sm text-slate-600">
-                  {completedExercises.length} of {exercises.length} completed
-                </span>
-              </div>
-              <div className="h-3 w-full overflow-hidden rounded-full bg-white">
-                <div
-                  className="h-full rounded-full bg-blue-600 transition-all duration-300"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
+          <div className="mb-8 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 shadow-sm">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-900">Your Progress</span>
+              <span className="text-sm text-slate-600">
+                {completedExercises.length} of {exercises.length} completed
+              </span>
             </div>
-
-            <div className="space-y-3">
-              {exercises.map((exercise) => (
-                <ExerciseCard
-                  key={exercise.id}
-                  exercise={exercise}
-                  isActive={activeExercise === exercise.id}
-                  onSelect={() =>
-                    setActiveExercise((prev) => (prev === exercise.id ? null : exercise.id))
-                  }
-                  isCompleted={completedExercises.includes(exercise.id)}
-                  onComplete={() => handleComplete(exercise.id)}
-                />
-              ))}
+            <div className="h-3 w-full overflow-hidden rounded-full bg-white">
+              <div
+                className="h-full rounded-full bg-blue-600 transition-all duration-300"
+                style={{ width: `${progressPercent}%` }}
+              />
             </div>
           </div>
 
-          <hr className="border-slate-100" />
+          {/* This is the grid container! It perfectly balances 3 items per row */}
+          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            {exercises.map((exercise, index) => {
+              const isActive = activeExercise === exercise.id;
+              
+              // Smart Grid Logic:
+              // - If active, take up the full width (col-span-3)
+              // - If it's the 10th item (index 9) AND no item is currently active, push it to the middle column (col-start-2)
+              // - Otherwise, just act like a normal grid item (col-span-1)
+              let gridClass = "col-span-1";
+              if (isActive) {
+                gridClass = "col-span-3";
+              } else if (index === 9 && activeExercise === null) {
+                gridClass = "col-span-1 col-start-2";
+              }
+
+              return (
+                <div key={exercise.id} className={gridClass}>
+                  <ExerciseCard
+                    exercise={exercise}
+                    isActive={isActive}
+                    onSelect={() =>
+                      setActiveExercise((prev) => (prev === exercise.id ? null : exercise.id))
+                    }
+                    isCompleted={completedExercises.includes(exercise.id)}
+                    onComplete={() => handleComplete(exercise.id)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <hr className="border-slate-100" />
 
         <section>
           <h3 className="mb-4 text-xl font-medium text-[#3a648b] font-carmensin">Mindfulness Reflection</h3>
@@ -536,68 +545,7 @@ export function MindfulnessSection({ headingId }: Props) {
           </div>
         </section>
 
-        <hr className="border-slate-100" />
-
-        <section>
-          <h3 className="mb-4 text-xl font-medium text-[#3a648b] font-carmensin">Why Mindfulness Matters</h3>
-          <p className="mb-6 text-sm leading-7 text-slate-600">
-            Regular mindfulness practice can improve focus, reduce stress, and help you respond more calmly.
-          </p>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border-l-4 border-emerald-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">Better Focus</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Mindfulness trains your brain to concentrate on one thing at a time.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border-l-4 border-blue-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">Less Stress</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Taking mindful pauses helps calm your nervous system and reduce anxiety.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border-l-4 border-amber-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">More Patience</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Mindfulness helps you respond thoughtfully instead of reacting impulsively.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border-l-4 border-rose-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">Greater Happiness</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Being present helps you appreciate small moments and feel more content.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="pb-4">
-          <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm">
-            <h3 className="mb-2 text-lg font-medium text-[#3a648b] font-carmensin">7-Day Mindfulness Challenge</h3>
-            <p className="mb-4 text-sm leading-6 text-slate-600">
-              Try one exercise each day for a week. Notice how your awareness grows.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setChallengeStarted(true)}
-              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
-                challengeStarted
-                  ? "bg-green-600 text-white hover:bg-green-700"
-                  : "bg-slate-900 text-white hover:bg-slate-800"
-              }`}
-            >
-              {challengeStarted ? "Challenge Started" : "Start Challenge"}
-            </button>
-          </div>
-        </section>
-
-        </div>
-      </section>
+      </div>
     </div>
   );
 }
