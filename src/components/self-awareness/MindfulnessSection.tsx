@@ -236,45 +236,27 @@ function ExerciseCard({
       <button
         type="button"
         onClick={onSelect}
-        className={`w-full rounded-2xl border p-4 text-left transition duration-200 ${
+        className={`flex aspect-square w-full flex-col items-center justify-center rounded-xl border px-2 py-3 text-center transition duration-200 ${
           isCompleted
             ? "border-green-200 bg-green-50"
-            : "border-black/5 bg-white hover:-translate-y-0.5 hover:shadow-sm"
+            : "border-slate-200/80 bg-white/70 hover:-translate-y-0.5 hover:bg-white hover:shadow-sm"
         }`}
       >
-        <div className="flex items-center gap-4">
-          <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-2xl"
-          >
-            {isCompleted ? "✅" : exercise.emoji}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-semibold text-slate-900">{exercise.title}</h3>
-              {isCompleted && (
-                <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                  Done
-                </span>
-              )}
-            </div>
-
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={`rounded-full px-2 py-1 text-xs font-medium ${exercise.badge}`}>
-                {exercise.category}
-              </span>
-              <span className="text-xs text-slate-500">{exercise.duration} min</span>
-            </div>
-          </div>
-
-          <span className="text-xl text-slate-400">›</span>
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-2xl shadow-sm sm:h-14 sm:w-14 sm:text-3xl">
+          {isCompleted ? "✅" : exercise.emoji}
         </div>
+        <h3 className="mt-3 line-clamp-2 text-[0.72rem] font-semibold leading-tight text-slate-900 sm:text-[0.82rem]">
+          {exercise.title}
+        </h3>
+        <span className="mt-1 text-[0.62rem] font-medium text-slate-500 sm:text-[0.7rem]">
+          {exercise.duration} min
+        </span>
       </button>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+    <div className="w-full overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
       <div className="bg-slate-50 border-b border-slate-100 p-5">
         <div className="flex items-start gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">
@@ -381,7 +363,6 @@ export function MindfulnessSection({ headingId }: Props) {
   const [reflection, setReflection] = useState("");
   const [selectedPrompts, setSelectedPrompts] = useState<string[]>([]);
   const [favoriteExercise, setFavoriteExercise] = useState("");
-  const [challengeStarted, setChallengeStarted] = useState(false);
 
   const reflectionPrompts = [
     "I felt calm",
@@ -405,12 +386,11 @@ export function MindfulnessSection({ headingId }: Props) {
         aria-labelledby={headingId}
       >
         <div className="mb-8 text-center">
-          <h2
-            id={headingId}
+          <h3
             className="font-display text-center text-[1.25rem] font-semibold tracking-[0.04em] text-bvm-title sm:text-[1.375rem]"
           >
             10+ MINI MINDFULNESS EXERCISES
-          </h2>
+          </h3>
         </div>
 
         <div className="space-y-12">
@@ -435,26 +415,38 @@ export function MindfulnessSection({ headingId }: Props) {
               </div>
             </div>
 
-            <div className="space-y-3">
-              {exercises.map((exercise) => (
-                <ExerciseCard
-                  key={exercise.id}
-                  exercise={exercise}
-                  isActive={activeExercise === exercise.id}
-                  onSelect={() =>
-                    setActiveExercise((prev) => (prev === exercise.id ? null : exercise.id))
-                  }
-                  isCompleted={completedExercises.includes(exercise.id)}
-                  onComplete={() => handleComplete(exercise.id)}
-                />
-              ))}
+            <div className="grid grid-cols-3 gap-3 sm:gap-4">
+              {exercises.map((exercise, index) => {
+                const isActive = activeExercise === exercise.id;
+                const centeredLastItem =
+                  index === exercises.length - 1 && activeExercise === null;
+                const gridClass = isActive
+                  ? "col-span-3"
+                  : centeredLastItem
+                    ? "col-span-1 col-start-2"
+                    : "col-span-1";
+
+                return (
+                  <div key={exercise.id} className={gridClass}>
+                    <ExerciseCard
+                      exercise={exercise}
+                      isActive={isActive}
+                      onSelect={() =>
+                        setActiveExercise((prev) => (prev === exercise.id ? null : exercise.id))
+                      }
+                      isCompleted={completedExercises.includes(exercise.id)}
+                      onComplete={() => handleComplete(exercise.id)}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           <hr className="border-slate-100" />
 
         <section>
-          <h3 className="mb-4 text-xl font-medium text-[#3a648b] font-carmensin">Mindfulness Reflection</h3>
+          <h3 className="mb-4 text-[1rem] font-semibold text-bvm-title">Mindfulness Reflection</h3>
           <p className="mb-6 text-sm leading-7 text-slate-600">
             After trying an exercise, take a moment to reflect on how it felt.
           </p>
@@ -533,66 +525,6 @@ export function MindfulnessSection({ headingId }: Props) {
                 })}
               </div>
             </div>
-          </div>
-        </section>
-
-        <hr className="border-slate-100" />
-
-        <section>
-          <h3 className="mb-4 text-xl font-medium text-[#3a648b] font-carmensin">Why Mindfulness Matters</h3>
-          <p className="mb-6 text-sm leading-7 text-slate-600">
-            Regular mindfulness practice can improve focus, reduce stress, and help you respond more calmly.
-          </p>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border-l-4 border-emerald-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">Better Focus</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Mindfulness trains your brain to concentrate on one thing at a time.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border-l-4 border-blue-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">Less Stress</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Taking mindful pauses helps calm your nervous system and reduce anxiety.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border-l-4 border-amber-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">More Patience</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Mindfulness helps you respond thoughtfully instead of reacting impulsively.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border-l-4 border-rose-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">Greater Happiness</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Being present helps you appreciate small moments and feel more content.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="pb-4">
-          <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm">
-            <h3 className="mb-2 text-lg font-medium text-[#3a648b] font-carmensin">7-Day Mindfulness Challenge</h3>
-            <p className="mb-4 text-sm leading-6 text-slate-600">
-              Try one exercise each day for a week. Notice how your awareness grows.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setChallengeStarted(true)}
-              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
-                challengeStarted
-                  ? "bg-green-600 text-white hover:bg-green-700"
-                  : "bg-slate-900 text-white hover:bg-slate-800"
-              }`}
-            >
-              {challengeStarted ? "Challenge Started" : "Start Challenge"}
-            </button>
           </div>
         </section>
 
