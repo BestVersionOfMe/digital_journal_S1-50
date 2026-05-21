@@ -7,9 +7,9 @@ import { JOURNAL_GLASS_BORDER, JOURNAL_GLASS_PANEL_BASE } from "@/lib/self-aware
 type Props = { headingId: string; embedded?: boolean };
 
 const WHO_OPTIONS = [
-  { id: "Mentor / Teacher", icon: "👨‍🏫", label: "Mentor" },
+  { id: "Mentor / Teacher", icon: "🧑‍🏫", label: "Mentor" },
   { id: "Manager / Supervisor", icon: "💼", label: "Manager" },
-  { id: "Teammate / Peer", icon: "👥", label: "Teammate" },
+  { id: "Teammate / Peer", icon: "🤝", label: "Teammate" },
 ];
 
 const QUESTION_DECK = [
@@ -62,26 +62,23 @@ export function SeekingFeedbackSection({ headingId, embedded = false }: Props) {
   const handleGenerate = () => {
     const name = activeWho.trim();
     const topic = what.trim();
+    const question = selectedQ.trim();
     let template = "";
 
-    if (selectedQ === QUESTION_DECK[0].text) {
-      // Scene 1：What's one thing I did really well?
-      template = `Hi ${name},\n\nI'm currently reflecting on ${topic} and want to identify my strengths so I can keep building on them.\n\nCould you let me know: ${selectedQ}\n\nThanks for your time!`;
+    if (question === QUESTION_DECK[0].text) {
+      template = `Hi ${name},\n\nI'm currently reflecting on ${topic} and want to identify my strengths so I can keep building on them.\n\nCould you let me know: ${question}\n\nThanks for your time!`;
 
-    } else if (selectedQ === QUESTION_DECK[1].text) {
-      // Scene 2：What's one thing I could improve next time?
-      template = `Hi ${name},\n\nI'm always looking for ways to grow, especially regarding ${topic}. I'd love to get your honest feedback to help me level up.\n\n${selectedQ}\n\nI really appreciate your insights.`;
+    } else if (question === QUESTION_DECK[1].text) {
+      template = `Hi ${name},\n\nI'm always looking for ways to grow, especially regarding ${topic}. I'd love to get your honest feedback to help me level up.\n\n${question}\n\nI really appreciate your insights.`;
 
-    } else if (selectedQ === QUESTION_DECK[2].text) {
-      // Scene 3：If you were in my shoes...
-      template = `Hi ${name},\n\nI've been thinking about ${topic} and wanted to get your take on it. I really respect your experience and would love to learn from your approach.\n\n${selectedQ}\n\nThank you!`;
+    } else if (question === QUESTION_DECK[2].text) {
+      template = `Hi ${name},\n\nI've been thinking about ${topic} and wanted to get your take on it. I really respect your experience and would love to learn from your approach.\n\n${question}\n\nThank you!`;
 
-    } else if (selectedQ === QUESTION_DECK[3].text) {
-      // Sence 4：Do you have any advice...
-      template = `Hi ${name},\n\nI'm working on developing my skills in ${topic}, and your guidance would mean a lot to me.\n\n${selectedQ}\n\nThanks so much for your support.`;
+    } else if (question === QUESTION_DECK[3].text) {
+      template = `Hi ${name},\n\nI'm working on developing my skills in ${topic}, and your guidance would mean a lot to me.\n\n${question}\n\nThanks so much for your support.`;
 
     } else {
-      template = `Hi ${name},\n\nI'm trying to reflect on and improve ${topic}. I really value your perspective.\n\n${selectedQ}\n\nThank you!`;
+      template = `Hi ${name},\n\nI'm trying to reflect on and improve ${topic}. I really value your perspective.\n\n${question}\n\nThank you!`;
     }
 
     setSeekingFeedbackText(template);
@@ -119,6 +116,7 @@ export function SeekingFeedbackSection({ headingId, embedded = false }: Props) {
                 type="button"
                 onClick={() => setSeekingFeedbackSubmitted(false)}
                 className="rounded-lg p-2 text-slate-500 hover:text-bvm-title transition-colors"
+                aria-label="Edit request"
               >
                 <PencilIcon className="h-5 w-5" />
               </button>
@@ -176,6 +174,7 @@ export function SeekingFeedbackSection({ headingId, embedded = false }: Props) {
 
                 <div className="pt-4 flex justify-end">
                   <button
+                    type="button"
                     disabled={!isInfoReady}
                     onClick={() => setSubStep(2)}
                     className="inline-flex items-center gap-2 rounded-xl bg-bvm-title px-5 py-2.5 text-[0.95rem] font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0"
@@ -191,24 +190,42 @@ export function SeekingFeedbackSection({ headingId, embedded = false }: Props) {
             {subStep === 2 && (
               <div className="animate-fade-in space-y-6">
                 <div>
-                  <label className="block text-[0.95rem] font-semibold text-slate-800">3. Choose a powerful question</label>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {QUESTION_DECK.map((q) => (
-                    <button
-                      key={q.id}
-                      onClick={() => setSelectedQ(selectedQ === q.text ? "" : q.text)}
-                      className={`flex flex-col items-start rounded-xl border p-4 text-left transition-all ${selectedQ === q.text ? "border-[#7b8fd4] bg-[#7b8fd4]/5 ring-1 ring-[#7b8fd4]" : "border-slate-200/80 bg-white/50 hover:bg-white"
-                        }`}
-                    >
-                      <span className={`text-[0.9375rem] font-semibold ${selectedQ === q.text ? 'text-[#5468b1]' : 'text-slate-800'}`}>{'"'}{q.text}{'"'}</span>
-                      <span className="mt-2 text-[0.8125rem] text-slate-500 leading-relaxed">💡 {q.tip}</span>
-                    </button>
-                  ))}
+                  <label
+                    htmlFor="seeking-feedback-question"
+                    className="block text-[0.95rem] font-semibold text-slate-800"
+                  >
+                    3. Choose a powerful question
+                  </label>
+                  <textarea
+                    id="seeking-feedback-question"
+                    rows={3}
+                    value={selectedQ}
+                    onChange={(e) => setSelectedQ(e.target.value)}
+                    placeholder="Write your own question first..."
+                    className="mt-3 w-full resize-y rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 text-[0.9375rem] leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+                  />
+                  <p className="mt-3 text-[0.8125rem] leading-relaxed text-slate-500">
+                    Or choose a suggested question below.
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {QUESTION_DECK.map((q) => (
+                      <button
+                        key={q.id}
+                        type="button"
+                        onClick={() => setSelectedQ(selectedQ === q.text ? "" : q.text)}
+                        className={`flex flex-col items-start rounded-xl border p-4 text-left transition-all ${selectedQ === q.text ? "border-[#7b8fd4] bg-[#7b8fd4]/5 ring-1 ring-[#7b8fd4]" : "border-slate-200/80 bg-white/50 hover:bg-white"
+                          }`}
+                      >
+                        <span className={`text-[0.9375rem] font-semibold ${selectedQ === q.text ? "text-[#5468b1]" : "text-slate-800"}`}>&quot;{q.text}&quot;</span>
+                        <span className="mt-2 text-[0.8125rem] text-slate-500 leading-relaxed">💡 {q.tip}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="pt-4 flex item-center justify-end gap-6">
 
                   <button
+                    type="button"
                     onClick={() => setSubStep(1)}
                     className="text-[0.8125rem] font-medium text-slate-500 transition-colors hover:text-slate-800 underline decoration-transparent hover:decoration-slate-300 underline-offset-4"
                   >
@@ -216,7 +233,8 @@ export function SeekingFeedbackSection({ headingId, embedded = false }: Props) {
                   </button>
 
                   <button
-                    disabled={selectedQ === ""}
+                    type="button"
+                    disabled={selectedQ.trim().length === 0}
                     onClick={handleGenerate}
                     className="rounded-xl bg-bvm-title px-5 py-2.5 text-[0.95rem] font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 disabled:opacity-40"
                   >
@@ -243,12 +261,15 @@ export function SeekingFeedbackSection({ headingId, embedded = false }: Props) {
                 <div className="pt-4 flex items-center justify-end gap-6">
 
                   <button
+                    type="button"
                     onClick={() => setSubStep(2)}
                     className="text-[0.8125rem] font-medium text-slate-500 transition-colors hover:text-slate-800 underline decoration-transparent hover:decoration-slate-300 underline-offset-4"
                   >
                     ← Back
                   </button>
                   <button
+                    type="button"
+                    disabled={text.trim().length === 0}
                     onClick={() => setSeekingFeedbackSubmitted(true)}
                     className="rounded-xl bg-bvm-title px-5 py-2.5 text-[0.95rem] font-semibold uppercase text-white shadow-md hover:-translate-y-0.5 disabled:opacity-40"
                   >
