@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   JOURNAL_GLASS_BORDER,
   JOURNAL_GLASS_PANEL_BASE,
   RATING_SKILLS,
   RATING_TABLE_WIDTH_PCT,
+  todayIsoDateLocal,
+  type SkillRatingSnapshot,
 } from "@/lib/self-awareness";
 import { useJournalStorage } from "@/hooks/useJournalStorage";
 import { SegmentedControl } from "./SegmentedControl";
@@ -16,16 +18,50 @@ const scaleStripLabelClass =
 const skillNameClass =
   "text-[0.8125rem] font-medium leading-[1.45] tracking-[0.01em] text-slate-800 sm:text-[0.875rem]";
 
+function formatSnapshotTime(createdAt: string): string {
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function getRatingIncrease(
+  current: SkillRatingSnapshot,
+  previous: SkillRatingSnapshot | undefined,
+  skillId: string,
+): number {
+  if (!previous) return 0;
+  const currentValue = Number(current.ratings[skillId]);
+  const previousValue = Number(previous.ratings[skillId]);
+  if (!Number.isFinite(currentValue) || !Number.isFinite(previousValue)) return 0;
+  return Math.max(0, currentValue - previousValue);
+}
+
 /** Whole-page title + lead + skills rating (sits above all six anchor sections). */
 export function SelfAwarenessIntroAndSkills() {
-  const { state, setRatings } = useJournalStorage();
+  const { state, setRatings, saveSkillRatingSnapshot, removeSkillRatingSnapshot } =
+    useJournalStorage();
+  const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
   const setRating = useCallback(
     (sid: string, v: string | null) => {
       setRatings((r) => ({ ...r, [sid]: v }));
+      setSavedMessage(null);
     },
     [setRatings],
   );
+
+  const allRatingsComplete = useMemo(
+    () => RATING_SKILLS.every(({ id }) => state.ratings[id] != null),
+    [state.ratings],
+  );
+
+  const savedToday = useMemo(() => todayIsoDateLocal(), []);
+
+  const handleSaveSnapshot = useCallback(() => {
+    if (!allRatingsComplete) return;
+    saveSkillRatingSnapshot(savedToday);
+    setSavedMessage(`Saved a new entry for ${savedToday}.`);
+  }, [allRatingsComplete, saveSkillRatingSnapshot, savedToday]);
 
   return (
     <div className="bvm-page mx-auto max-w-[40rem] px-5 pb-12 pt-10 text-slate-800 sm:max-w-[42rem] sm:px-8 sm:pb-16 sm:pt-12">
@@ -125,6 +161,117 @@ export function SelfAwarenessIntroAndSkills() {
               </div>
             );
           })}
+        </div>
+
+        <div className="mt-8 border-t border-slate-200/35 pt-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-[1rem] font-semibold text-slate-800">Saved rating records</h3>
+              <p className="mt-1 text-[0.8125rem] leading-relaxed text-slate-600">
+                Save multiple entries in one day and compare each entry with the one before it.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleSaveSnapshot}
+              disabled={!allRatingsComplete}
+              className="rounded-xl bg-bvm-title px-5 py-3 text-[0.95rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Save current rating
+            </button>
+          </div>
+
+          {!allRatingsComplete ? (
+            <p className="mt-3 text-[0.78rem] font-medium text-slate-500">
+              Complete all six ratings before saving an entry.
+            </p>
+          ) : savedMessage ? (
+            <p className="mt-3 text-[0.78rem] font-medium text-bvm-title">
+              {savedMessage}
+            </p>
+          ) : null}
+
+          <div className="mt-5 space-y-3">
+            {state.skillRatingSnapshots.length === 0 ? (
+              <div className="rounded-xl border border-slate-200/80 bg-white/50 px-4 py-4">
+                <p className="text-[0.875rem] leading-relaxed text-slate-600">
+                  No saved rating records yet.
+                </p>
+              </div>
+            ) : (
+              state.skillRatingSnapshots.map((snapshot, index) => {
+                const previousSnapshot = state.skillRatingSnapshots[index + 1];
+
+                return (
+                  <article
+                    key={snapshot.id}
+                    className="rounded-xl border border-slate-200/80 bg-white/50 px-4 py-4"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h4 className="text-[0.95rem] font-semibold text-slate-800">
+                          {snapshot.date}
+                        </h4>
+                        <p className="mt-0.5 text-[0.75rem] text-slate-500">
+                          {formatSnapshotTime(snapshot.createdAt)}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeSkillRatingSnapshot(snapshot.id)}
+                        className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/60 hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+                        aria-label={`Delete rating record for ${snapshot.date}`}
+                      >
+                        <svg
+                          className="h-4 w-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden
+                        >
+                          <path d="M4 7h16" />
+                          <path d="M10 11v6" />
+                          <path d="M14 11v6" />
+                          <path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+                          <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {RATING_SKILLS.map(({ id, label }) => {
+                        const increase = getRatingIncrease(snapshot, previousSnapshot, id);
+
+                        return (
+                          <div
+                            key={`${snapshot.id}-${id}`}
+                            className="rounded-lg border border-slate-200/70 bg-white/60 px-3 py-2"
+                          >
+                            <p
+                              className="truncate text-[0.7rem] font-medium text-slate-500"
+                              title={label}
+                            >
+                              {label}
+                            </p>
+                            <p className="mt-0.5 flex items-baseline gap-1.5 text-[1rem] font-semibold tabular-nums text-bvm-title">
+                              <span>{snapshot.ratings[id] ?? "-"}</span>
+                              {increase > 0 ? (
+                                <span className="text-[0.7rem] font-semibold text-emerald-600">
+                                  +{increase}
+                                </span>
+                              ) : null}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </article>
+                );
+              })
+            )}
+          </div>
         </div>
       </section>
     </div>

@@ -217,8 +217,16 @@ export type ReflectionWeekBlock = {
   submitted: boolean;
 };
 
+export type SkillRatingSnapshot = {
+  id: string;
+  date: string;
+  createdAt: string;
+  ratings: Record<string, string | null>;
+};
+
 export type JournalState = {
   ratings: Record<string, string | null>;
+  skillRatingSnapshots: SkillRatingSnapshot[];
   compassion: Record<string, string>;
   /** Single measure area (demo) */
   reflectionArea: string;
@@ -245,7 +253,7 @@ export type JournalState = {
 export function defaultJournalState(): JournalState {
   const ratings: Record<string, string | null> = {};
   for (const { id } of RATING_SKILLS) {
-    ratings[id] = id === "seek_feedback" ? "3" : null;
+    ratings[id] = null;
   }
   const compassion: Record<string, string> = {};
   for (const { id } of COMPASSION_PROMPTS) {
@@ -253,6 +261,7 @@ export function defaultJournalState(): JournalState {
   }
   return {
     ratings,
+    skillRatingSnapshots: [],
     compassion,
     reflectionArea: "",
     reflectionScale: "numbers",
@@ -332,6 +341,18 @@ export function exportMarkdown(state: JournalState): string {
     lines.push(
       `- **${label}:** ${v != null ? v : "_(not selected)_"}`,
     );
+  }
+  if (state.skillRatingSnapshots.length > 0) {
+    lines.push("");
+    lines.push("### Saved skills rating records");
+    lines.push("");
+    for (const snapshot of state.skillRatingSnapshots) {
+      lines.push(`- ${snapshot.date} (${snapshot.createdAt})`);
+      for (const { id, label } of RATING_SKILLS) {
+        const v = snapshot.ratings[id];
+        lines.push(`  - **${label}:** ${v != null ? v : "_(not selected)_"}`);
+      }
+    }
   }
   lines.push("");
   lines.push("## Self compassion");

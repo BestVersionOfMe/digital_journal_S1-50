@@ -7,31 +7,31 @@ import { JOURNAL_GLASS_BORDER, JOURNAL_GLASS_PANEL_BASE } from "@/lib/self-aware
 type Props = { headingId: string; embedded?: boolean };
 
 const RECIPIENT_OPTIONS = [
-  { id: "Classmate", label: "Classmate" },
-  { id: "Teammate", label: "Teammate" },
-  { id: "Friend", label: "Friend" },
-  { id: "Group member", label: "Group member" },
+  { id: "Classmate", icon: "🎓", label: "Classmate" },
+  { id: "Teammate", icon: "🤝", label: "Teammate" },
+  { id: "Friend", icon: "😊", label: "Friend" },
+  { id: "Group member", icon: "👥", label: "Group member" },
 ];
 
 const GLOW_PRESETS = [
   {
     id: "clear-idea",
-    text: "explaining the main idea clearly",
+    text: "Explaining the main idea clearly",
     tip: "Clear communication",
   },
   {
     id: "team-support",
-    text: "working well with the group and supporting others",
+    text: "Working well with the group and supporting others",
     tip: "Teamwork",
   },
   {
     id: "strong-effort",
-    text: "putting in strong effort and staying focused",
+    text: "Putting in strong effort and staying focused",
     tip: "Effort",
   },
   {
     id: "confident-sharing",
-    text: "showing confidence and sharing your ideas",
+    text: "Showing confidence and sharing your ideas",
     tip: "Confidence",
   },
 ];
@@ -39,22 +39,22 @@ const GLOW_PRESETS = [
 const GROW_PRESETS = [
   {
     id: "pacing",
-    text: "pausing a little more so the audience can follow",
+    text: "Pausing a little more so the audience can follow",
     tip: "Pacing",
   },
   {
     id: "specific-detail",
-    text: "adding one more example or detail to make your point stronger",
+    text: "Adding one more example or detail to make your point stronger",
     tip: "Specific evidence",
   },
   {
     id: "active-listening",
-    text: "listening carefully to others before responding",
+    text: "Listening carefully to others before responding",
     tip: "Active listening",
   },
   {
     id: "preparation",
-    text: "practising the next step earlier so it feels smoother",
+    text: "Practising the next step earlier so it feels smoother",
     tip: "Preparation",
   },
 ];
@@ -124,7 +124,7 @@ function PresetCards({
   const selectedText = accent === "glow" ? "text-pink-700" : "text-teal-700";
 
   return (
-    <div className="mb-3 grid gap-3 sm:grid-cols-2">
+    <div className="mt-3 grid gap-3 sm:grid-cols-2">
       {options.map((option) => {
         const selected = value === option.text;
 
@@ -154,6 +154,12 @@ function PresetCards({
       })}
     </div>
   );
+}
+
+function sentenceFragment(value: string, presets: PresetOption[]): string {
+  if (value.length === 0) return value;
+  if (!presets.some((preset) => preset.text === value)) return value;
+  return value.charAt(0).toLowerCase() + value.slice(1);
 }
 
 function PencilIcon({ className }: { className?: string }) {
@@ -195,8 +201,8 @@ export function GivingFeedbackSection({ headingId, embedded = false }: Props) {
   const handleGenerate = () => {
     const name = activeRecipient.trim();
     const feedbackTopic = topic.trim();
-    const glowText = glow.trim();
-    const growText = grow.trim();
+    const glowText = sentenceFragment(glow.trim(), GLOW_PRESETS);
+    const growText = sentenceFragment(grow.trim(), GROW_PRESETS);
 
     const draft = `Hi ${name},
 
@@ -307,7 +313,7 @@ I hope this is helpful.`;
                                 : "border-slate-200/90 bg-white/60 text-slate-600 hover:bg-white"
                             }`}
                           >
-                            {option.label}
+                            <span aria-hidden>{option.icon}</span> {option.label}
                           </button>
                         );
                       })}
@@ -354,14 +360,8 @@ I hope this is helpful.`;
                       3. Glow: what did they do well?
                     </label>
                     <p className="mb-3 text-[0.8125rem] leading-relaxed text-slate-500">
-                      Choose a preset or write your own.
+                      Write your own first, or choose a preset below.
                     </p>
-                    <PresetCards
-                      accent="glow"
-                      options={GLOW_PRESETS}
-                      value={glow}
-                      onChange={setGlow}
-                    />
                     <textarea
                       id="giving-feedback-glow"
                       rows={4}
@@ -369,6 +369,12 @@ I hope this is helpful.`;
                       onChange={(e) => setGlow(e.target.value)}
                       placeholder="Describe one specific strength or positive action..."
                       className="w-full resize-y rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 text-[0.9375rem] leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+                    />
+                    <PresetCards
+                      accent="glow"
+                      options={GLOW_PRESETS}
+                      value={glow}
+                      onChange={setGlow}
                     />
                   </div>
 
@@ -380,14 +386,8 @@ I hope this is helpful.`;
                       4. Grow: what could they improve next time?
                     </label>
                     <p className="mb-3 text-[0.8125rem] leading-relaxed text-slate-500">
-                      Choose one supportive next step, then adjust it if needed.
+                      Write your own next step first, or choose a preset below.
                     </p>
-                    <PresetCards
-                      accent="grow"
-                      options={GROW_PRESETS}
-                      value={grow}
-                      onChange={setGrow}
-                    />
                     <textarea
                       id="giving-feedback-grow"
                       rows={4}
@@ -395,6 +395,12 @@ I hope this is helpful.`;
                       onChange={(e) => setGrow(e.target.value)}
                       placeholder="Suggest one clear, supportive next step..."
                       className="w-full resize-y rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 text-[0.9375rem] leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+                    />
+                    <PresetCards
+                      accent="grow"
+                      options={GROW_PRESETS}
+                      value={grow}
+                      onChange={setGrow}
                     />
                   </div>
 
