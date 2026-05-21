@@ -363,7 +363,6 @@ export function MindfulnessSection({ headingId }: Props) {
   const [reflection, setReflection] = useState("");
   const [selectedPrompts, setSelectedPrompts] = useState<string[]>([]);
   const [favoriteExercise, setFavoriteExercise] = useState("");
-  const [challengeStarted, setChallengeStarted] = useState(false);
 
   const reflectionPrompts = [
     "I felt calm",
@@ -526,66 +525,6 @@ export function MindfulnessSection({ headingId }: Props) {
                 })}
               </div>
             </div>
-          </div>
-        </section>
-
-        <hr className="border-slate-100" />
-
-        <section>
-          <h3 className="mb-4 text-[1rem] font-semibold text-bvm-title">Why Mindfulness Matters</h3>
-          <p className="mb-6 text-sm leading-7 text-slate-600">
-            Regular mindfulness practice can improve focus, reduce stress, and help you respond more calmly.
-          </p>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border-l-4 border-emerald-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">Better Focus</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Mindfulness trains your brain to concentrate on one thing at a time.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border-l-4 border-blue-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">Less Stress</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Taking mindful pauses helps calm your nervous system and reduce anxiety.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border-l-4 border-amber-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">More Patience</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Mindfulness helps you respond thoughtfully instead of reacting impulsively.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border-l-4 border-rose-500 bg-slate-50 p-5">
-              <h4 className="mb-2 font-semibold text-slate-900">Greater Happiness</h4>
-              <p className="text-sm leading-6 text-slate-600">
-                Being present helps you appreciate small moments and feel more content.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="pb-4">
-          <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm">
-            <h3 className="mb-2 text-[1rem] font-semibold text-bvm-title">7-Day Mindfulness Challenge</h3>
-            <p className="mb-4 text-sm leading-6 text-slate-600">
-              Try one exercise each day for a week. Notice how your awareness grows.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setChallengeStarted(true)}
-              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
-                challengeStarted
-                  ? "bg-green-600 text-white hover:bg-green-700"
-                  : "bg-slate-900 text-white hover:bg-slate-800"
-              }`}
-            >
-              {challengeStarted ? "Challenge Started" : "Start Challenge"}
-            </button>
           </div>
         </section>
 
