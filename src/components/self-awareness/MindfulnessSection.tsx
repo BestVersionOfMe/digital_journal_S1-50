@@ -519,7 +519,7 @@ export function MindfulnessSection({ headingId }: Props) {
                       }`}
                     >
                       <span className="text-lg">{exercise.emoji}</span>
-                      <span className="truncate text-xs font-medium">{exercise.title}</span>
+                      <span className="text-xs font-medium whitespace-normal break-words leading-tight">{exercise.title}</span>
                     </button>
                   );
                 })}
