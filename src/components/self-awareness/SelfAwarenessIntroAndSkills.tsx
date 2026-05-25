@@ -115,7 +115,7 @@ export function SelfAwarenessIntroAndSkills() {
                         { n: "5", lines: ["Very", "Strong"] },
                       ] as const
                     ).map((col) => (
-                      <td key={col.n} className="w-[20%] align-top px-1 py-3 sm:px-1.5">
+                      <td key={col.n} className="w-[20%] align-top px-0.5 py-3 sm:px-1.5">
                         <div className="flex flex-col items-center">
                           <span className="text-[0.75rem] font-semibold tabular-nums leading-none text-slate-900">
                             {col.n}
@@ -123,7 +123,7 @@ export function SelfAwarenessIntroAndSkills() {
                           <div className="mt-1.5 flex min-h-[2.625rem] w-full flex-col items-center justify-center gap-0 text-[0.55rem] sm:text-[0.625rem] font-normal leading-[1.25] text-slate-600 sm:min-h-[2.75rem]">
                             {col.lines.map((line) => (
                               /* add: break-words and tracking-tighter*/
-                              <span key={`${col.n}-${line}`} className="block w-full text-center break-words tracking-tighter sm:tracking-normal">
+                              <span key={`${col.n}-${line}`} className="block w-full break-words text-center tracking-tighter [overflow-wrap:anywhere] sm:tracking-normal">
                                 {line}
                               </span>
                             ))}
