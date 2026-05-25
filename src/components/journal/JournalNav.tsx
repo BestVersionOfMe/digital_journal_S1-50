@@ -3,7 +3,10 @@ import { JOURNAL_NAV_ITEMS } from "@/lib/journal-nav";
 /** Four quick-jump links: full width strip directly under the hero banner. */
 export function JournalNav() {
   return (
-    <div className="w-full border-b border-slate-200/50 bg-gradient-to-b from-white/85 to-[#eef3f9]/95 shadow-[0_4px_24px_-12px_rgba(43,106,158,0.12)] backdrop-blur-sm">
+    <div
+      data-journal-nav
+      className="w-full border-b border-slate-200/50 bg-gradient-to-b from-white/85 to-[#eef3f9]/95 shadow-[0_4px_24px_-12px_rgba(43,106,158,0.12)] backdrop-blur-sm"
+    >
       <nav
         className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-8 sm:py-6 lg:px-14"
         aria-label="Self-Awareness sections"
