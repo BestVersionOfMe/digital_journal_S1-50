@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
   JOURNAL_GLASS_BORDER,
   JOURNAL_GLASS_PANEL_BASE,
@@ -40,12 +40,10 @@ function getRatingIncrease(
 export function SelfAwarenessIntroAndSkills() {
   const { state, setRatings, saveSkillRatingSnapshot, removeSkillRatingSnapshot } =
     useJournalStorage();
-  const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
   const setRating = useCallback(
     (sid: string, v: string | null) => {
       setRatings((r) => ({ ...r, [sid]: v }));
-      setSavedMessage(null);
     },
     [setRatings],
   );
@@ -56,15 +54,15 @@ export function SelfAwarenessIntroAndSkills() {
   );
 
   const savedToday = useMemo(() => todayIsoDateLocal(), []);
+  const hasSavedRatingRecords = state.skillRatingSnapshots.length > 0;
 
   const handleSaveSnapshot = useCallback(() => {
     if (!allRatingsComplete) return;
     saveSkillRatingSnapshot(savedToday);
-    setSavedMessage(`Saved a new entry for ${savedToday}.`);
   }, [allRatingsComplete, saveSkillRatingSnapshot, savedToday]);
 
   return (
-    <div className="bvm-page mx-auto max-w-[40rem] px-5 pb-12 pt-10 text-slate-800 sm:max-w-[42rem] sm:px-8 sm:pb-16 sm:pt-12">
+    <div className="bvm-page mx-auto max-w-[40rem] px-5 pb-6 pt-10 text-slate-800 sm:max-w-[42rem] sm:px-8 sm:pb-8 sm:pt-12">
       <section
         className={`mt-2 sm:mt-3 ${JOURNAL_GLASS_PANEL_BASE} ${JOURNAL_GLASS_BORDER.skillsRating}`}
         aria-labelledby="sa-rating-block-title"
@@ -166,14 +164,17 @@ export function SelfAwarenessIntroAndSkills() {
           })}
         </div>
 
-        <div className="mt-8 border-t border-slate-200/35 pt-6">
-          <div className="flex items-start justify-between gap-3">
-            <div>
+        <div className="mt-5 border-t border-slate-200/35 pt-4">
+          <div
+            className={
+              hasSavedRatingRecords
+                ? "flex items-start justify-between gap-3"
+                : "flex justify-center"
+            }
+          >
+            {hasSavedRatingRecords ? (
               <h3 className="text-[1rem] font-semibold text-slate-800">Saved rating records</h3>
-              <p className="mt-1 text-[0.8125rem] leading-relaxed text-slate-600">
-                Save multiple entries in one day and compare each entry with the one before it.
-              </p>
-            </div>
+            ) : null}
             <button
               type="button"
               onClick={handleSaveSnapshot}
@@ -184,25 +185,9 @@ export function SelfAwarenessIntroAndSkills() {
             </button>
           </div>
 
-          {!allRatingsComplete ? (
-            <p className="mt-3 text-[0.78rem] font-medium text-slate-500">
-              Complete all six ratings before saving an entry.
-            </p>
-          ) : savedMessage ? (
-            <p className="mt-3 text-[0.78rem] font-medium text-bvm-title">
-              {savedMessage}
-            </p>
-          ) : null}
-
-          <div className="mt-5 space-y-3">
-            {state.skillRatingSnapshots.length === 0 ? (
-              <div className="rounded-xl border border-slate-200/80 bg-white/50 px-4 py-4">
-                <p className="text-[0.875rem] leading-relaxed text-slate-600">
-                  No saved rating records yet.
-                </p>
-              </div>
-            ) : (
-              state.skillRatingSnapshots.map((snapshot, index) => {
+          {hasSavedRatingRecords ? (
+            <div className="mt-5 space-y-3">
+              {state.skillRatingSnapshots.map((snapshot, index) => {
                 const previousSnapshot = state.skillRatingSnapshots[index + 1];
 
                 return (
@@ -272,9 +257,9 @@ export function SelfAwarenessIntroAndSkills() {
                     </div>
                   </article>
                 );
-              })
-            )}
-          </div>
+              })}
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

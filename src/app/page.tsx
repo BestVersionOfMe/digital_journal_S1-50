@@ -6,6 +6,7 @@ import { JournalPageFooter } from "@/components/self-awareness/JournalPageFooter
 import { MindfulnessSection } from "@/components/self-awareness/MindfulnessSection";
 import { SelfReflectionSection } from "@/components/self-awareness/SelfReflectionSection";
 import { JournalNav } from "@/components/journal/JournalNav";
+import { SectionSideNav } from "@/components/journal/SectionSideNav";
 import { JOURNAL_NAV_ITEMS } from "@/lib/journal-nav";
 
 /** Offset for in-page anchors under sticky site top bar */
@@ -16,6 +17,7 @@ export default function Home() {
     <main>
       <SelfAwarenessHeroBanner />
       <JournalNav />
+      <SectionSideNav />
       <SelfAwarenessIntroAndSkills />
 
       {JOURNAL_NAV_ITEMS.map(({ id }) => {
