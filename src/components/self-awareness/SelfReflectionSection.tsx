@@ -110,12 +110,14 @@ function RatingSlider({
   min = 1,
   max = 10,
   dense,
+  disabled = false,
 }: {
   value: number;
   onChange: (next: number) => void;
   min?: number;
   max?: number;
   dense?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <div className={dense ? "pt-0.5" : "pt-2"}>
@@ -125,8 +127,15 @@ function RatingSlider({
         max={max}
         step={1}
         value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className={`bvm-slider w-full cursor-pointer appearance-none rounded-full bg-white/50 accent-bvm-title ${dense ? "h-1.5" : "h-2"}`}
+        onChange={(e) => {
+          if (!disabled) {
+            onChange(Number(e.target.value));
+          }
+        }}
+        disabled={disabled}
+        className={`bvm-slider w-full appearance-none rounded-full bg-white/50 accent-bvm-title ${
+          dense ? "h-1.5" : "h-2"
+        } ${disabled ? "cursor-default opacity-90" : "cursor-pointer"}`}
         aria-label="Rating slider"
       />
       {!dense ? (
@@ -304,7 +313,7 @@ function ReflectionWordsEditor({
         )}
       </div>
 
-      <div className={`flex gap-2 ${compact ? "flex-col" : "flex-col sm:flex-row"}`}>
+      <div className="flex flex-row items-end gap-2">
         <input
           type="text"
           value={customDraft}
@@ -316,13 +325,13 @@ function ReflectionWordsEditor({
             }
           }}
           placeholder="Or type custom word..."
-          className="min-w-0 flex-1 rounded-xl border border-slate-200/80 bg-white/80 px-3 py-2 text-[0.78rem] text-slate-800 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.82rem]"
+          className="min-w-0 h-10 flex-1 rounded-xl border border-slate-200/80 bg-white/80 px-3 text-[0.78rem] text-slate-800 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.82rem]"
         />
         <button
           type="button"
           onClick={addCustom}
           disabled={addDisabled}
-          className="shrink-0 rounded-xl bg-bvm-title px-4 py-2 text-[0.78rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40 sm:text-[0.82rem]"
+          className="h-10 shrink-0 rounded-xl bg-bvm-title px-3.5 text-[0.78rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40 sm:text-[0.82rem]"
         >
           Add
         </button>
@@ -348,9 +357,7 @@ function JournalRatingCell({
     if (m.scale === "numbers") {
       return (
         <div className="flex h-full min-h-[40px] flex-col justify-center">
-          <p className="text-center text-[0.72rem] font-semibold tabular-nums text-bvm-title sm:text-[0.78rem]">
-            {m.numberValue != null ? m.numberValue : "—"}
-          </p>
+          <RatingSlider dense value={m.numberValue ?? 1} onChange={() => {}} disabled />
         </div>
       );
     }
@@ -501,8 +508,14 @@ export function SelfReflectionSection({ headingId }: Props) {
   const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
   const [celebrationWeekId, setCelebrationWeekId] = useState<string | null>(null);
   const [hasShownFirstCelebration, setHasShownFirstCelebration] = useState(false);
+  const [reflectionAreaDraft, setReflectionAreaDraft] = useState(state.reflectionArea);
   const trimmedReflectionArea = state.reflectionArea.trim();
-  const canCreateReflectionMeasure = trimmedReflectionArea.length > 0;
+  const trimmedReflectionAreaDraft = reflectionAreaDraft.trim();
+  const canCreateReflectionMeasure = trimmedReflectionAreaDraft.length > 0;
+
+  useEffect(() => {
+    setReflectionAreaDraft(state.reflectionArea);
+  }, [state.reflectionArea]);
 
   useEffect(() => {
     if (state.reflectionWeeks.length === 0) {
@@ -514,9 +527,10 @@ export function SelfReflectionSection({ headingId }: Props) {
 
   const createJournal = useCallback(() => {
     if (!canCreateReflectionMeasure) return;
+    const area = trimmedReflectionAreaDraft;
     const measure: SelfReflectionMeasure = {
       id: newReflectionMeasureId(),
-      area: trimmedReflectionArea,
+      area,
       scale: state.reflectionScale,
       numberValue: null,
       wordTokens:
@@ -528,13 +542,14 @@ export function SelfReflectionSection({ headingId }: Props) {
     };
     addReflectionMeasure(measure);
     setReflectionArea("");
+    setReflectionAreaDraft("");
   }, [
     addReflectionMeasure,
     canCreateReflectionMeasure,
     setReflectionArea,
     state.reflectionScale,
     state.reflectionWordTokens,
-    trimmedReflectionArea,
+    trimmedReflectionAreaDraft,
   ]);
 
   const handleSubmitWeek = useCallback(
@@ -564,13 +579,17 @@ export function SelfReflectionSection({ headingId }: Props) {
         <div className="space-y-6">
           <div>
             <h3 className="font-display text-[1rem] font-medium text-bvm-title sm:text-[1.05rem]">
-              Choose What to Measure
+              Choose what to measure
             </h3>
             <label className="mt-4 block text-[0.8125rem] font-medium text-slate-800">Area</label>
             <input
               type="text"
-              value={state.reflectionArea}
-              onChange={(e) => setReflectionArea(e.target.value)}
+              value={reflectionAreaDraft}
+              onChange={(e) => {
+                const next = e.target.value;
+                setReflectionAreaDraft(next);
+                setReflectionArea(next);
+              }}
               placeholder="e.g., Sleep quality"
               className="mt-2 w-full rounded-xl border border-slate-200/70 bg-white/70 px-4 py-3 text-[0.95rem] text-slate-700 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
             />
@@ -682,7 +701,7 @@ export function SelfReflectionSection({ headingId }: Props) {
           id="self-reflection-journal-heading"
           className="font-display text-center text-[1.05rem] font-semibold tracking-[0.04em] text-bvm-title sm:text-[1.15rem]"
         >
-          My self reflection journal
+          MY SELF REFLECTION JOURNAL
         </h3>
 
         {state.reflectionWeeks.length === 0 ? (
@@ -737,17 +756,7 @@ export function SelfReflectionSection({ headingId }: Props) {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      if (
-                        typeof window !== "undefined" &&
-                        !window.confirm(
-                          `Delete ${week.label} and all areas in this week? This cannot be undone.`,
-                        )
-                      ) {
-                        return;
-                      }
-                      removeReflectionWeek(week.id);
-                    }}
+                    onClick={() => removeReflectionWeek(week.id)}
                     className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 sm:right-3 sm:top-3"
                     aria-label={`Delete ${week.label}`}
                   >

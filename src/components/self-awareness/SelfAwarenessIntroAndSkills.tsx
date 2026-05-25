@@ -167,7 +167,7 @@ export function SelfAwarenessIntroAndSkills() {
         </div>
 
         <div className="mt-8 border-t border-slate-200/35 pt-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start justify-between gap-3">
             <div>
               <h3 className="text-[1rem] font-semibold text-slate-800">Saved rating records</h3>
               <p className="mt-1 text-[0.8125rem] leading-relaxed text-slate-600">
@@ -178,7 +178,7 @@ export function SelfAwarenessIntroAndSkills() {
               type="button"
               onClick={handleSaveSnapshot}
               disabled={!allRatingsComplete}
-              className="rounded-xl bg-bvm-title px-5 py-3 text-[0.95rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40"
+              className="shrink-0 rounded-xl bg-bvm-title px-5 py-3 text-[0.95rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Save current rating
             </button>
