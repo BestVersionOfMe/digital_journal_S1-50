@@ -87,10 +87,11 @@ export function SelfAwarenessIntroAndSkills() {
           <div
             className="grid min-h-[4.5rem] items-stretch"
             style={{
-              gridTemplateColumns: "minmax(0, 1.05fr) minmax(0, 1.5fr)",
+              // fix: 1.05fr -> 0.9fr
+              gridTemplateColumns: "minmax(0, 0.9fr) minmax(0, 1.5fr)",
             }}
           >
-            <div className="flex items-center border-r border-slate-200/35 px-3 py-3.5 sm:px-4">
+            <div className="flex items-center border-r border-slate-200/35 px-3 py-3.5 sm:px-4 break-words">
               <p className={`${scaleStripLabelClass} text-left leading-snug`}>
                 SELF-AWARENESS SKILLS RATING
               </p>
@@ -119,9 +120,10 @@ export function SelfAwarenessIntroAndSkills() {
                           <span className="text-[0.75rem] font-semibold tabular-nums leading-none text-slate-900">
                             {col.n}
                           </span>
-                          <div className="mt-1.5 flex min-h-[2.625rem] w-full flex-col items-center justify-center gap-0 text-[0.625rem] font-normal leading-[1.25] text-slate-600 sm:min-h-[2.75rem]">
+                          <div className="mt-1.5 flex min-h-[2.625rem] w-full flex-col items-center justify-center gap-0 text-[0.55rem] sm:text-[0.625rem] font-normal leading-[1.25] text-slate-600 sm:min-h-[2.75rem]">
                             {col.lines.map((line) => (
-                              <span key={`${col.n}-${line}`} className="block w-full text-center">
+                              /* add: break-words and tracking-tighter*/
+                              <span key={`${col.n}-${line}`} className="block w-full text-center break-words tracking-tighter sm:tracking-normal">
                                 {line}
                               </span>
                             ))}
@@ -145,10 +147,11 @@ export function SelfAwarenessIntroAndSkills() {
                 key={sid}
                 className="grid items-center gap-x-3 gap-y-2.5 py-[1.125rem] first:pt-3 sm:gap-x-4 sm:py-5"
                 style={{
-                  gridTemplateColumns: "minmax(0, 1.05fr) minmax(0, 1.5fr)",
+                  // fix: 1.05fr -> 0.9fr
+                  gridTemplateColumns: "minmax(0, 0.9fr) minmax(0, 1.5fr)",
                 }}
               >
-                <div id={labelId} className={`${skillNameClass} pr-1`}>
+                <div id={labelId} className={`${skillNameClass} pr-1 break-words`}>
                   {label}
                 </div>
                 <div className="min-w-0 w-full pl-0">
