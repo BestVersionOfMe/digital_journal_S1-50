@@ -433,7 +433,7 @@ function JournalRatingCell({
       );
     }
     return (
-      <div className="flex max-w-full flex-nowrap justify-center gap-0.5 overflow-x-auto pb-0.5">
+      <div className="grid w-full grid-cols-2 gap-1 sm:grid-cols-4">
         {palette.map((word, i) => {
           const selected = m.wordRatingIndex === i;
           return (
@@ -443,14 +443,14 @@ function JournalRatingCell({
               title={word}
               onClick={() => onPatch({ wordRatingIndex: i })}
               className={[
-                "flex min-w-0 flex-1 basis-0 flex-col items-center justify-center rounded-lg px-0.5 py-1",
+                "flex min-h-[2rem] min-w-0 flex-col items-center justify-center rounded-lg px-1 py-1 text-center",
                 selected
                   ? "bg-white/90 ring-1 ring-bvm-title/30"
                   : "opacity-85 hover:opacity-100",
               ].join(" ")}
             >
               <span
-                className={`max-w-full truncate text-center text-[0.55rem] font-medium leading-tight sm:text-[0.58rem] ${
+                className={`max-w-full whitespace-normal text-center text-[0.55rem] font-medium leading-tight sm:text-[0.58rem] ${
                   selected ? "text-bvm-title" : "text-slate-600"
                 }`}
               >
@@ -862,7 +862,12 @@ export function SelfReflectionSection({ headingId }: Props) {
                             </p>
                           </div>
 
-                          <div className="flex min-w-0 flex-1 items-center overflow-hidden rounded-full border border-sky-200/60 bg-white/25 px-2 py-1.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+                          <div
+                            className={[
+                              "flex min-w-0 flex-1 items-center overflow-hidden border border-sky-200/60 bg-white/25 px-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]",
+                              m.scale === "words" ? "rounded-2xl py-2" : "rounded-full py-1.5",
+                            ].join(" ")}
+                          >
                             <div className="w-full px-1.5">
                               <JournalRatingCell
                                 m={m}

@@ -124,7 +124,7 @@ function PresetCards({
   const selectedText = accent === "glow" ? "text-pink-700" : "text-teal-700";
 
   return (
-    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+    <div className="mt-3 grid grid-cols-2 gap-2.5 sm:gap-3">
       {options.map((option) => {
         const selected = value === option.text;
 
@@ -133,20 +133,20 @@ function PresetCards({
             key={option.id}
             type="button"
             onClick={() => onChange(selected ? "" : option.text)}
-            className={`flex min-h-[7.5rem] flex-col items-start rounded-xl border p-4 text-left transition-all ${
+            className={`flex min-h-[8rem] flex-col items-start rounded-xl border p-3 text-left transition-all sm:min-h-[7.5rem] sm:p-4 ${
               selected
                 ? selectedClasses
                 : "border-slate-200/80 bg-white/50 hover:bg-white"
             }`}
           >
             <span
-              className={`text-[0.9375rem] font-semibold leading-snug ${
+              className={`text-[0.78rem] font-semibold leading-snug sm:text-[0.9375rem] ${
                 selected ? selectedText : "text-slate-800"
               }`}
             >
               {option.text}
             </span>
-            <span className="mt-2 text-[0.8125rem] leading-relaxed text-slate-500">
+            <span className="mt-2 text-[0.7rem] leading-relaxed text-slate-500 sm:text-[0.8125rem]">
               {option.tip}
             </span>
           </button>
