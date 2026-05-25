@@ -55,7 +55,7 @@ export function SiteTopNav() {
           >
             BEST VERSION OF ME
           </Link>
-          
+
           <nav
             className="grid grid-cols-2 sm:flex w-full sm:w-auto min-w-0 items-center justify-start sm:justify-end gap-x-4 gap-y-2.5 sm:gap-x-6 lg:gap-x-10 text-left sm:text-right"
             aria-label="Main journal areas"
@@ -99,7 +99,7 @@ export function SiteTopNav() {
 
       <style dangerouslySetInnerHTML={{__html: `
         main > :first-child {
-          padding-top: 130px !important; 
+          padding-top: 130px !important;
         }
         @media (min-width: 640px) {
           main > :first-child {
