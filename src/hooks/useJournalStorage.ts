@@ -18,6 +18,7 @@ import {
   type ReflectionWordChoice,
   type SelfReflectionMeasure,
   type SelfReflectionScale,
+  type SkillRatingSnapshot,
 } from "@/lib/self-awareness";
 
 function clampWordRatingIndex(
@@ -41,6 +42,52 @@ function isScale(v: unknown): v is SelfReflectionScale {
 
 function isIsoDate(v: unknown): v is string {
   return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+}
+
+function emptyRatings(): Record<string, string | null> {
+  const base = defaultJournalState().ratings;
+  return Object.fromEntries(Object.keys(base).map((key) => [key, null]));
+}
+
+function normalizeRatings(
+  raw: unknown,
+  fallback: Record<string, string | null> = defaultJournalState().ratings,
+): Record<string, string | null> {
+  const out = { ...fallback };
+  if (!raw || typeof raw !== "object") return out;
+  const input = raw as Record<string, unknown>;
+  for (const key of Object.keys(out)) {
+    const value = input[key];
+    if (typeof value === "string" && /^[1-5]$/.test(value)) {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+function sortSkillRatingSnapshots(
+  snapshots: SkillRatingSnapshot[],
+): SkillRatingSnapshot[] {
+  return [...snapshots].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+function parseSkillRatingSnapshot(raw: unknown): SkillRatingSnapshot | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.id !== "string" || !isIsoDate(o.date)) return null;
+  return {
+    id: o.id,
+    date: o.date,
+    createdAt: typeof o.createdAt === "string" ? o.createdAt : `${o.date}T00:00:00.000Z`,
+    ratings: normalizeRatings(o.ratings, emptyRatings()),
+  };
+}
+
+function newSkillRatingSnapshotId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `skill_rating_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
 /** Legacy single-entry shape */
@@ -104,7 +151,38 @@ function parseStored(raw: string | null): JournalState {
   if (!raw) return base;
   try {
     const data = JSON.parse(raw) as Record<string, unknown>;
-    const ratings = { ...base.ratings, ...(data.ratings as JournalState["ratings"]) };
+    const ratings = normalizeRatings(data.ratings, base.ratings);
+    if (
+      ratings.seek_feedback == null &&
+      data.ratings &&
+      typeof data.ratings === "object" &&
+      typeof (data.ratings as Record<string, unknown>).feedback === "string"
+    ) {
+      ratings.seek_feedback = (data.ratings as Record<string, string>).feedback;
+    }
+    if (
+      ratings.honesty == null &&
+      data.ratings &&
+      typeof data.ratings === "object" &&
+      typeof (data.ratings as Record<string, unknown>).giving_feedback === "string"
+    ) {
+      ratings.honesty = (data.ratings as Record<string, string>).giving_feedback;
+    }
+    if (
+      ratings.honesty == null &&
+      data.ratings &&
+      typeof data.ratings === "object" &&
+      typeof (data.ratings as Record<string, unknown>).feedback === "string"
+    ) {
+      ratings.honesty = (data.ratings as Record<string, string>).feedback;
+    }
+    const skillRatingSnapshots = Array.isArray(data.skillRatingSnapshots)
+      ? sortSkillRatingSnapshots(
+          (data.skillRatingSnapshots as unknown[])
+            .map(parseSkillRatingSnapshot)
+            .filter((snapshot): snapshot is SkillRatingSnapshot => snapshot != null),
+        )
+      : base.skillRatingSnapshots;
     const compassion = { ...base.compassion, ...(data.compassion as JournalState["compassion"]) };
 
     let reflectionArea = base.reflectionArea;
@@ -197,22 +275,28 @@ function parseStored(raw: string | null): JournalState {
     let seekingFeedbackText = base.seekingFeedbackText;
     if (typeof data.seekingFeedbackText === "string") seekingFeedbackText = data.seekingFeedbackText;
 
-    let honestyGivingFeedbackText = base.honestyGivingFeedbackText;
-    if (typeof data.honestyGivingFeedbackText === "string")
-      honestyGivingFeedbackText = data.honestyGivingFeedbackText;
+    let givingFeedbackText = base.givingFeedbackText;
+    if (typeof data.givingFeedbackText === "string") {
+      givingFeedbackText = data.givingFeedbackText;
+    } else if (typeof data.honestyGivingFeedbackText === "string") {
+      givingFeedbackText = data.honestyGivingFeedbackText;
+    }
 
     let seekingFeedbackSubmitted = base.seekingFeedbackSubmitted;
     if (typeof data.seekingFeedbackSubmitted === "boolean") {
       seekingFeedbackSubmitted = data.seekingFeedbackSubmitted;
     }
 
-    let honestyGivingFeedbackSubmitted = base.honestyGivingFeedbackSubmitted;
-    if (typeof data.honestyGivingFeedbackSubmitted === "boolean") {
-      honestyGivingFeedbackSubmitted = data.honestyGivingFeedbackSubmitted;
+    let givingFeedbackSubmitted = base.givingFeedbackSubmitted;
+    if (typeof data.givingFeedbackSubmitted === "boolean") {
+      givingFeedbackSubmitted = data.givingFeedbackSubmitted;
+    } else if (typeof data.honestyGivingFeedbackSubmitted === "boolean") {
+      givingFeedbackSubmitted = data.honestyGivingFeedbackSubmitted;
     }
 
     return {
       ratings,
+      skillRatingSnapshots,
       compassion,
       reflectionArea,
       reflectionScale,
@@ -223,8 +307,8 @@ function parseStored(raw: string | null): JournalState {
       reflectionWeeks,
       seekingFeedbackText,
       seekingFeedbackSubmitted,
-      honestyGivingFeedbackText,
-      honestyGivingFeedbackSubmitted,
+      givingFeedbackText,
+      givingFeedbackSubmitted,
     } satisfies JournalState;
   } catch {
     return base;
@@ -257,6 +341,43 @@ export function useJournalStorage() {
     },
     [],
   );
+
+  const saveSkillRatingSnapshot = useCallback((date: string = todayIsoDateLocal()) => {
+    if (!isIsoDate(date)) return;
+    setState((prev) => {
+      const now = new Date().toISOString();
+      const snapshot: SkillRatingSnapshot = {
+        id: newSkillRatingSnapshotId(),
+        date,
+        createdAt: now,
+        ratings: { ...prev.ratings },
+      };
+      const next = {
+        ...prev,
+        skillRatingSnapshots: sortSkillRatingSnapshots([
+          snapshot,
+          ...prev.skillRatingSnapshots,
+        ]),
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
+
+  const removeSkillRatingSnapshot = useCallback((id: string) => {
+    setState((prev) => {
+      const next = {
+        ...prev,
+        skillRatingSnapshots: prev.skillRatingSnapshots.filter((snapshot) => snapshot.id !== id),
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
 
   const setCompassion = useCallback(
     (updater: (c: Record<string, string>) => Record<string, string>) => {
@@ -510,9 +631,9 @@ export function useJournalStorage() {
     });
   }, []);
 
-  const setHonestyGivingFeedbackText = useCallback((next: string) => {
+  const setGivingFeedbackText = useCallback((next: string) => {
     setState((prev) => {
-      const updated = { ...prev, honestyGivingFeedbackText: next };
+      const updated = { ...prev, givingFeedbackText: next };
       if (typeof window !== "undefined") {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       }
@@ -530,9 +651,9 @@ export function useJournalStorage() {
     });
   }, []);
 
-  const setHonestyGivingFeedbackSubmitted = useCallback((submitted: boolean) => {
+  const setGivingFeedbackSubmitted = useCallback((submitted: boolean) => {
     setState((prev) => {
-      const updated = { ...prev, honestyGivingFeedbackSubmitted: submitted };
+      const updated = { ...prev, givingFeedbackSubmitted: submitted };
       if (typeof window !== "undefined") {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       }
@@ -544,6 +665,8 @@ export function useJournalStorage() {
     state,
     commit,
     setRatings,
+    saveSkillRatingSnapshot,
+    removeSkillRatingSnapshot,
     setCompassion,
     setReflectionArea,
     setReflectionScale,
@@ -558,8 +681,8 @@ export function useJournalStorage() {
     updateReflectionMeasure,
     submitReflectionWeek,
     setSeekingFeedbackText,
-    setHonestyGivingFeedbackText,
+    setGivingFeedbackText,
     setSeekingFeedbackSubmitted,
-    setHonestyGivingFeedbackSubmitted,
+    setGivingFeedbackSubmitted,
   };
 }

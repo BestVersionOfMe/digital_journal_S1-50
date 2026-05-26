@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`scroll-smooth ${inter.variable} ${lora.variable}`}>
-      <body className="min-h-screen bg-gradient-to-b from-bvm-pageTop to-bvm-pageBottom font-sans text-slate-800 antialiased">
+      <body suppressHydrationWarning className="min-h-screen bg-gradient-to-b from-bvm-pageTop to-bvm-pageBottom font-sans text-slate-800 antialiased">
         <JournalShell>{children}</JournalShell>
       </body>
     </html>

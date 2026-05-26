@@ -245,26 +245,22 @@ function ExerciseCard({
       <button
         type="button"
         onClick={onSelect}
-        // Changed to a vertical layout (flex-col) to look like an app icon
-        className={`w-full h-full flex flex-col items-center justify-center rounded-[2rem] border p-4 text-center transition duration-200 ${
+        className={`w-full h-full flex flex-col items-center justify-start rounded-2xl border p-2 sm:p-3 text-center transition duration-200 ${
           isCompleted
             ? "border-green-200 bg-green-50"
             : "border-slate-100 bg-white hover:-translate-y-1 hover:shadow-md"
         }`}
       >
+        {/* Shrunk the icon size even further here! */}
         <div
-          className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-2xl sm:text-3xl mb-3 shadow-sm"
+          className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-base sm:text-xl mb-2 shadow-sm"
         >
           {isCompleted ? "✅" : exercise.emoji}
         </div>
         
-        <h3 className="font-semibold text-slate-900 text-xs sm:text-sm line-clamp-2 leading-tight">
+        <h3 className="font-medium text-slate-900 text-[10px] sm:text-xs line-clamp-2 leading-tight">
           {exercise.title}
         </h3>
-        
-        <span className="mt-1 text-[10px] sm:text-xs text-slate-500 font-medium">
-          {exercise.duration} min
-        </span>
       </button>
     );
   }
@@ -272,14 +268,31 @@ function ExerciseCard({
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm w-full">
       <div className="bg-slate-50 border-b border-slate-100 p-5">
-        <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">
-            {exercise.emoji}
+        <div className="flex items-start justify-between gap-4">
+          
+          <div className="flex gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">
+              {exercise.emoji}
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-slate-900">{exercise.title}</h3>
+              <p className="mt-1 text-sm leading-6 text-slate-700">{exercise.description}</p>
+            </div>
           </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-slate-900">{exercise.title}</h3>
-            <p className="mt-1 text-sm leading-6 text-slate-700">{exercise.description}</p>
-          </div>
+          
+          {/* Top Right "X" Close Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsPlaying(false);
+              onSelect();
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200/50 text-slate-500 transition hover:bg-slate-200 hover:text-slate-800"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+
         </div>
       </div>
 
@@ -355,17 +368,6 @@ function ExerciseCard({
             ))}
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            setIsPlaying(false);
-            onSelect();
-          }}
-          className="mt-4 w-full rounded-2xl py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
-        >
-          Close
-        </button>
       </div>
     </div>
   );
@@ -376,7 +378,7 @@ export function MindfulnessSection({ headingId }: Props) {
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const [reflection, setReflection] = useState("");
   const [selectedPrompts, setSelectedPrompts] = useState<string[]>([]);
-  const [favoriteExercise, setFavoriteExercise] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const reflectionPrompts = [
     "I felt calm",
@@ -396,14 +398,12 @@ export function MindfulnessSection({ headingId }: Props) {
   return (
     <div className="relative z-10 mx-auto max-w-2xl px-4 py-12 pointer-events-auto">
       
-      {/* Centered Heading */}
       <div className="mb-8 text-center">
         <h2 id={headingId} className="text-xl sm:text-2xl font-bold tracking-widest text-[#3a648b] uppercase font-carmensin">
           10+ MINI MINDFULNESS EXERCISES
         </h2>
       </div>
 
-      {/* Main unified card wrapper */}
       <div className="rounded-[2rem] border border-blue-50/50 bg-white/95 p-6 sm:p-10 shadow-sm space-y-12">
         
         <section aria-labelledby={headingId}>
@@ -427,19 +427,14 @@ export function MindfulnessSection({ headingId }: Props) {
             </div>
           </div>
 
-          {/* This is the grid container! It perfectly balances 3 items per row */}
-          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-4 gap-2 sm:gap-4">
             {exercises.map((exercise, index) => {
               const isActive = activeExercise === exercise.id;
               
-              // Smart Grid Logic:
-              // - If active, take up the full width (col-span-3)
-              // - If it's the 10th item (index 9) AND no item is currently active, push it to the middle column (col-start-2)
-              // - Otherwise, just act like a normal grid item (col-span-1)
               let gridClass = "col-span-1";
               if (isActive) {
-                gridClass = "col-span-3";
-              } else if (index === 9 && activeExercise === null) {
+                gridClass = "col-span-4";
+              } else if (index === 8 && activeExercise === null) {
                 gridClass = "col-span-1 col-start-2";
               }
 
@@ -509,37 +504,28 @@ export function MindfulnessSection({ headingId }: Props) {
               </label>
               <textarea
                 value={reflection}
-                onChange={(e) => setReflection(e.target.value)}
+                onChange={(e) => {
+                  setReflection(e.target.value);
+                  setIsSubmitted(false);
+                }}
                 placeholder="What did you notice during the exercise? How do you feel now compared to before?"
                 className="min-h-[130px] w-full rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-800 outline-none transition focus:border-slate-900"
               />
-            </div>
-
-            <div>
-              <label className="mb-3 block text-sm font-semibold text-slate-900">
-                Which exercise would you like to practice daily?
-              </label>
-
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {exercises.slice(0, 6).map((exercise) => {
-                  const selected = favoriteExercise === exercise.title;
-
-                  return (
-                    <button
-                      key={exercise.id}
-                      type="button"
-                      onClick={() => setFavoriteExercise(exercise.title)}
-                      className={`flex items-center gap-3 rounded-2xl p-3 text-left transition ${
-                        selected
-                          ? "bg-slate-900 text-white"
-                          : "bg-white text-slate-800 border border-slate-200 hover:bg-slate-100"
-                      }`}
-                    >
-                      <span className="text-lg">{exercise.emoji}</span>
-                      <span className="truncate text-xs font-medium">{exercise.title}</span>
-                    </button>
-                  );
-                })}
+              
+              <div className="mt-4 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsSubmitted(true)}
+                  disabled={reflection.trim() === ""}
+                  className="rounded-xl bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Submit Reflection
+                </button>
+                {isSubmitted && (
+                  <span className="text-sm font-medium text-green-600 animate-pulse">
+                    ✓ Saved successfully!
+                  </span>
+                )}
               </div>
             </div>
           </div>

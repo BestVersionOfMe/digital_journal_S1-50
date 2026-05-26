@@ -1,13 +1,12 @@
 import { SelfAwarenessHeroBanner } from "@/components/self-awareness/SelfAwarenessHeroBanner";
 import { SelfAwarenessIntroAndSkills } from "@/components/self-awareness/SelfAwarenessIntroAndSkills";
 import SelfCompassion from "@/components/self-compassion/SelfCompassion";
-import { EmotionalAwarenessSection } from "@/components/self-awareness/EmotionalAwarenessSection";
-import { HonestySection } from "@/components/self-awareness/HonestySection";
+import { FeedbackSection } from "@/components/self-awareness/FeedbackSection";
 import { JournalPageFooter } from "@/components/self-awareness/JournalPageFooter";
 import { MindfulnessSection } from "@/components/self-awareness/MindfulnessSection";
 import { SelfReflectionSection } from "@/components/self-awareness/SelfReflectionSection";
-import { SeekingFeedbackSection } from "@/components/seeking-feedback/SeekingFeedback";
 import { JournalNav } from "@/components/journal/JournalNav";
+import { SectionSideNav } from "@/components/journal/SectionSideNav";
 import { JOURNAL_NAV_ITEMS } from "@/lib/journal-nav";
 
 /** Offset for in-page anchors under sticky site top bar */
@@ -18,6 +17,7 @@ export default function Home() {
     <main>
       <SelfAwarenessHeroBanner />
       <JournalNav />
+      <SectionSideNav />
       <SelfAwarenessIntroAndSkills />
 
       {JOURNAL_NAV_ITEMS.map(({ id }) => {
@@ -25,13 +25,13 @@ export default function Home() {
         const title =
           id === "self-compassion"
             ? "SELF COMPASSION"
-            : id === "seeking-feedback"
-              ? "SEEKING FEEDBACK"
-              : id === "honesty"
-                ? "HONESTY"
+            : id === "feedback"
+              ? "FEEDBACK"
                 : id === "self-reflection"
                   ? "SELF REFLECTION"
-                  : "";
+                  : id === "mindfulness"
+                    ? "MINDFULNESS"
+                    : "";
         return (
           <section key={id} id={id} className={sectionScrollClass} aria-labelledby={headingId}>
             {title ? (
@@ -43,11 +43,9 @@ export default function Home() {
               </h2>
             ) : null}
             {id === "self-compassion" && <SelfCompassion />}
-            {id === "seeking-feedback" && <SeekingFeedbackSection headingId={headingId} />}
-            {id === "honesty" && <HonestySection headingId={headingId} />}
+            {id === "feedback" && <FeedbackSection headingId={headingId} />}
             {id === "self-reflection" && <SelfReflectionSection headingId={headingId} />}
             {id === "mindfulness" && <MindfulnessSection headingId={headingId} />}
-            {id === "emotional-awareness" && <EmotionalAwarenessSection headingId={headingId} />}
           </section>
         );
       })}

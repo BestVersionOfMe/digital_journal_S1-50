@@ -11,7 +11,7 @@ import {
   type SelfCompassionWorkshopSnapshot,
 } from "@/lib/self-compassion-storage";
 
-/** Align with Seeking Feedback / Honesty / Self Reflection body & fields */
+/** Align with Seeking Feedback / Giving Feedback / Self Reflection body & fields */
 const scBody = "text-[0.9375rem] leading-[1.75] text-slate-600 sm:text-[1rem]";
 const scPrompt =
   "text-[0.95rem] font-semibold leading-snug text-slate-800 sm:text-[1rem]";
@@ -163,6 +163,7 @@ export default function SelfCompassion() {
   const resetEntireWorkshop = useCallback(() => {
     clearSelfCompassionWorkshop();
     applySnapshot(defaultSelfCompassionWorkshop());
+    setShowFeedback(false);
   }, [applySnapshot]);
 
   // === 💡 Dictionary Q1-5 promptchips ===
@@ -437,7 +438,7 @@ export default function SelfCompassion() {
                 {showReview ? "Hide my answers" : "Check my answers"}
               </button>
 
-              <Link href="/#seeking-feedback" className={`${scBtnPrimary} inline-flex items-center gap-2 px-8`}>
+              <Link href="/#feedback" className={`${scBtnPrimary} inline-flex items-center gap-2 px-8`}>
                 Go to next part <span aria-hidden>→</span>
               </Link>
             </div>
@@ -754,33 +755,33 @@ export default function SelfCompassion() {
 
         {/* Process bar and  NEXT Button */}
         <div className="mt-8 w-full">
-          <div className="flex items-center justify-between mb-4">
+          {/*  1: Mobile: flex-col（up & down），Desktop： sm:flex-row（Left & Right） */}
+          <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-6 sm:gap-0 mb-4 w-full">
 
             {/* whole process monitor */}
-            <div className="flex items-center gap-2 h-4">
+            {/*  2: Mobile: Process center */}
+            <div className="flex items-center justify-center w-full sm:w-auto gap-1.5 sm:gap-2 h-4">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => {
                 let barClasses = "rounded-full transition-all duration-500 ";
-                if (step === num) barClasses += `h-3 w-10 ${progressTheme.current} shadow-sm`;
-                else if (step > num) barClasses += `h-2 w-8 ${progressTheme.active}`;
-                else barClasses += `h-2 w-4 ${progressTheme.inactive}`;
+                //  3: Add sm: Mobile (w-8/w-6/w-3)，Desktop(w-10/w-8/w-4)
+                if (step === num) barClasses += `h-3 w-8 sm:w-10 ${progressTheme.current} shadow-sm`;
+                else if (step > num) barClasses += `h-2 w-6 sm:w-8 ${progressTheme.active}`;
+                else barClasses += `h-2 w-3 sm:w-4 ${progressTheme.inactive}`;
 
                 return <div key={num} className={barClasses}></div>;
               })}
             </div>
 
-            <div className="flex items-center gap-6">
-
-
+            {/* Buttons container */}
+            <div className="flex items-center justify-between w-full sm:w-auto gap-4 sm:gap-6">
               <button
                 type="button"
                 onClick={handleBack}
-
                 className={`text-[0.8125rem] font-medium transition-all underline decoration-transparent hover:decoration-slate-300 underline-offset-4 ${step === 1 ? "pointer-events-none opacity-0" : "text-slate-500 hover:text-slate-800"
                   }`}
               >
                 ← Back
               </button>
-
 
               <button
                 type="button"
@@ -795,14 +796,13 @@ export default function SelfCompassion() {
                 }}
                 disabled={!isCurrentStepValid()}
                 className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[0.95rem] font-semibold text-white bg-bvm-title transition-all ${!isCurrentStepValid()
-                    ? "cursor-not-allowed opacity-40"
-                    : "shadow-sm hover:-translate-y-0.5 hover:bg-bvm-title/90 hover:shadow-md"
+                  ? "cursor-not-allowed opacity-40"
+                  : "shadow-sm hover:-translate-y-0.5 hover:bg-bvm-title/90 hover:shadow-md"
                   }`}
               >
                 {(step === totalSteps && (q8Choice === 'positive' || showFeedback)) ? "Finish" : "Next"}
                 {(step === totalSteps && (q8Choice === 'positive' || showFeedback)) ? <span aria-hidden>✨</span> : <span aria-hidden>≫</span>}
               </button>
-
             </div>
 
           </div>

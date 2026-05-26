@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useJournalStorage } from "@/hooks/useJournalStorage";
 import {
   isMeasureRatingComplete,
@@ -82,18 +82,42 @@ function MoodFace({ mood, className = "h-12 w-12" }: { mood: 0 | 1 | 2 | 3; clas
   );
 }
 
+function CelebrationBurst() {
+  return (
+    <div className="relative h-14 w-14 shrink-0 sm:h-16 sm:w-16" aria-hidden>
+      <span className="absolute left-0 top-1 text-[1.8rem] motion-safe:animate-journal-celebrate-pop sm:text-[2rem]">
+        🎉
+      </span>
+      <span
+        className="absolute right-1 top-0 h-2.5 w-2.5 rounded-full bg-sky-400/80 motion-safe:animate-journal-confetti-float"
+        style={{ animationDelay: "0ms" }}
+      />
+      <span
+        className="absolute right-5 top-2 h-2 w-2 rounded-full bg-teal-400/80 motion-safe:animate-journal-confetti-float"
+        style={{ animationDelay: "180ms" }}
+      />
+      <span
+        className="absolute bottom-2 left-5 h-2.5 w-2.5 rounded-full bg-amber-300/90 motion-safe:animate-journal-confetti-float"
+        style={{ animationDelay: "360ms" }}
+      />
+    </div>
+  );
+}
+
 function RatingSlider({
   value,
   onChange,
   min = 1,
   max = 10,
   dense,
+  disabled = false,
 }: {
   value: number;
   onChange: (next: number) => void;
   min?: number;
   max?: number;
   dense?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <div className={dense ? "pt-0.5" : "pt-2"}>
@@ -103,8 +127,15 @@ function RatingSlider({
         max={max}
         step={1}
         value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className={`bvm-slider w-full cursor-pointer appearance-none rounded-full bg-white/50 accent-bvm-title ${dense ? "h-1.5" : "h-2"}`}
+        onChange={(e) => {
+          if (!disabled) {
+            onChange(Number(e.target.value));
+          }
+        }}
+        disabled={disabled}
+        className={`bvm-slider w-full appearance-none rounded-full bg-white/50 accent-bvm-title ${
+          dense ? "h-1.5" : "h-2"
+        } ${disabled ? "cursor-default opacity-90" : "cursor-pointer"}`}
         aria-label="Rating slider"
       />
       {!dense ? (
@@ -133,6 +164,14 @@ function IconTrash() {
   );
 }
 
+function IconClose() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
+      <path d="M2 2l6 6M8 2 2 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function scaleDisplayName(s: SelfReflectionScale): string {
   if (s === "numbers") return "Numbers (1 – 10)";
   if (s === "words") return "Words (presets & custom)";
@@ -144,12 +183,14 @@ function ReflectionWordsEditor({
   customPool,
   onTokensChange,
   onCustomPoolChange,
+  onCustomWordRemove,
   compact,
 }: {
   tokens: string[];
   customPool: string[];
   onTokensChange: (next: string[]) => void;
   onCustomPoolChange: (next: string[]) => void;
+  onCustomWordRemove: (word: string) => void;
   compact?: boolean;
 }) {
   const [customDraft, setCustomDraft] = useState("");
@@ -245,21 +286,34 @@ function ReflectionWordsEditor({
             {customPool.map((label) => {
               const selected = tokens.some((t) => t.toLowerCase() === label.toLowerCase());
               return (
-                <button
-                  key={`custom-${label}`}
-                  type="button"
-                  onClick={() => toggle(label)}
-                  className={pillClass(selected)}
-                >
-                  {label}
-                </button>
+                <div key={`custom-${label}`} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => toggle(label)}
+                    className={pillClass(selected)}
+                  >
+                    {label}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCustomWordRemove(label);
+                    }}
+                    className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border border-sky-200/80 bg-white text-slate-500 shadow-sm transition-colors hover:bg-red-50 hover:text-red-600"
+                    aria-label={`Remove custom word ${label}`}
+                    title="Remove custom word"
+                  >
+                    <IconClose />
+                  </button>
+                </div>
               );
             })}
           </div>
         )}
       </div>
 
-      <div className={`flex gap-2 ${compact ? "flex-col" : "flex-col sm:flex-row"}`}>
+      <div className="flex flex-row items-end gap-2">
         <input
           type="text"
           value={customDraft}
@@ -271,13 +325,13 @@ function ReflectionWordsEditor({
             }
           }}
           placeholder="Or type custom word..."
-          className="min-w-0 flex-1 rounded-xl border border-slate-200/80 bg-white/80 px-3 py-2 text-[0.78rem] text-slate-800 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.82rem]"
+          className="min-w-0 h-10 flex-1 rounded-xl border border-slate-200/80 bg-white/80 px-3 text-[0.78rem] text-slate-800 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.82rem]"
         />
         <button
           type="button"
           onClick={addCustom}
           disabled={addDisabled}
-          className="shrink-0 rounded-xl bg-bvm-title px-4 py-2 text-[0.78rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40 sm:text-[0.82rem]"
+          className="h-10 shrink-0 rounded-xl bg-bvm-title px-3.5 text-[0.78rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40 sm:text-[0.82rem]"
         >
           Add
         </button>
@@ -303,9 +357,7 @@ function JournalRatingCell({
     if (m.scale === "numbers") {
       return (
         <div className="flex h-full min-h-[40px] flex-col justify-center">
-          <p className="text-center text-[0.72rem] font-semibold tabular-nums text-bvm-title sm:text-[0.78rem]">
-            {m.numberValue != null ? m.numberValue : "—"}
-          </p>
+          <RatingSlider dense value={m.numberValue ?? 1} onChange={() => {}} disabled />
         </div>
       );
     }
@@ -381,7 +433,7 @@ function JournalRatingCell({
       );
     }
     return (
-      <div className="flex max-w-full flex-nowrap justify-center gap-0.5 overflow-x-auto pb-0.5">
+      <div className="grid w-full grid-cols-2 gap-1 sm:grid-cols-4">
         {palette.map((word, i) => {
           const selected = m.wordRatingIndex === i;
           return (
@@ -391,14 +443,14 @@ function JournalRatingCell({
               title={word}
               onClick={() => onPatch({ wordRatingIndex: i })}
               className={[
-                "flex min-w-0 flex-1 basis-0 flex-col items-center justify-center rounded-lg px-0.5 py-1",
+                "flex min-h-[2rem] min-w-0 flex-col items-center justify-center rounded-lg px-1 py-1 text-center",
                 selected
                   ? "bg-white/90 ring-1 ring-bvm-title/30"
                   : "opacity-85 hover:opacity-100",
               ].join(" ")}
             >
               <span
-                className={`max-w-full truncate text-center text-[0.55rem] font-medium leading-tight sm:text-[0.58rem] ${
+                className={`max-w-full whitespace-normal text-center text-[0.55rem] font-medium leading-tight sm:text-[0.58rem] ${
                   selected ? "text-bvm-title" : "text-slate-600"
                 }`}
               >
@@ -438,8 +490,6 @@ function JournalRatingCell({
 }
 
 export function SelfReflectionSection({ headingId }: Props) {
-  const [editingWeekIds, setEditingWeekIds] = useState<Record<string, boolean>>({});
-
   const {
     state,
     setReflectionArea,
@@ -455,11 +505,32 @@ export function SelfReflectionSection({ headingId }: Props) {
     updateReflectionMeasure,
     submitReflectionWeek,
   } = useJournalStorage();
+  const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
+  const [celebrationWeekId, setCelebrationWeekId] = useState<string | null>(null);
+  const [hasShownFirstCelebration, setHasShownFirstCelebration] = useState(false);
+  const [reflectionAreaDraft, setReflectionAreaDraft] = useState(state.reflectionArea);
+  const trimmedReflectionArea = state.reflectionArea.trim();
+  const trimmedReflectionAreaDraft = reflectionAreaDraft.trim();
+  const canCreateReflectionMeasure = trimmedReflectionAreaDraft.length > 0;
+
+  useEffect(() => {
+    setReflectionAreaDraft(state.reflectionArea);
+  }, [state.reflectionArea]);
+
+  useEffect(() => {
+    if (state.reflectionWeeks.length === 0) {
+      setCelebrationWeekId(null);
+      setHasShownFirstCelebration(false);
+      setEditingWeekId(null);
+    }
+  }, [state.reflectionWeeks.length]);
 
   const createJournal = useCallback(() => {
+    if (!canCreateReflectionMeasure) return;
+    const area = trimmedReflectionAreaDraft;
     const measure: SelfReflectionMeasure = {
       id: newReflectionMeasureId(),
-      area: state.reflectionArea.trim(),
+      area,
       scale: state.reflectionScale,
       numberValue: null,
       wordTokens:
@@ -470,14 +541,34 @@ export function SelfReflectionSection({ headingId }: Props) {
       emojiIndex: null,
     };
     addReflectionMeasure(measure);
-  }, [addReflectionMeasure, state.reflectionArea, state.reflectionScale, state.reflectionWordTokens]);
+    setReflectionArea("");
+    setReflectionAreaDraft("");
+  }, [
+    addReflectionMeasure,
+    canCreateReflectionMeasure,
+    setReflectionArea,
+    state.reflectionScale,
+    state.reflectionWordTokens,
+    trimmedReflectionAreaDraft,
+  ]);
+
+  const handleSubmitWeek = useCallback(
+    (weekId: string) => {
+      const isFirstSubmit = state.reflectionWeeks.every((week) => !week.submitted);
+      submitReflectionWeek(weekId);
+      if (isFirstSubmit && !hasShownFirstCelebration) {
+        setCelebrationWeekId(weekId);
+        setHasShownFirstCelebration(true);
+      }
+    },
+    [hasShownFirstCelebration, state.reflectionWeeks, submitReflectionWeek],
+  );
+
+  const toggleEditWeek = useCallback((weekId: string) => {
+    setEditingWeekId((current) => (current === weekId ? null : weekId));
+  }, []);
 
   const scale = state.reflectionScale;
-
-  const isWeekEditable = (weekId: string, submitted: boolean): boolean => {
-    if (!submitted) return true;
-    return editingWeekIds[weekId] === true;
-  };
 
   return (
     <div className="mx-auto max-w-[40rem] space-y-8 px-5 pb-16 pt-8 sm:max-w-[42rem] sm:px-8 sm:pb-20 sm:pt-10">
@@ -488,13 +579,17 @@ export function SelfReflectionSection({ headingId }: Props) {
         <div className="space-y-6">
           <div>
             <h3 className="font-display text-[1rem] font-medium text-bvm-title sm:text-[1.05rem]">
-              Choose What to Measure
+              Choose what to measure
             </h3>
             <label className="mt-4 block text-[0.8125rem] font-medium text-slate-800">Area</label>
             <input
               type="text"
-              value={state.reflectionArea}
-              onChange={(e) => setReflectionArea(e.target.value)}
+              value={reflectionAreaDraft}
+              onChange={(e) => {
+                const next = e.target.value;
+                setReflectionAreaDraft(next);
+                setReflectionArea(next);
+              }}
               placeholder="e.g., Sleep quality"
               className="mt-2 w-full rounded-xl border border-slate-200/70 bg-white/70 px-4 py-3 text-[0.95rem] text-slate-700 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
             />
@@ -555,6 +650,10 @@ export function SelfReflectionSection({ headingId }: Props) {
                   customPool={state.reflectionCustomWordPool}
                   onTokensChange={setReflectionWordTokens}
                   onCustomPoolChange={setReflectionCustomWordPool}
+                    onCustomWordRemove={(word) => {
+                      setReflectionWordTokens(state.reflectionWordTokens.filter((w) => w !== word));
+                      setReflectionCustomWordPool(state.reflectionCustomWordPool.filter((w) => w !== word));
+                    }}
                 />
               </div>
             )}
@@ -589,7 +688,8 @@ export function SelfReflectionSection({ headingId }: Props) {
           <button
             type="button"
             onClick={createJournal}
-            className="w-full rounded-2xl border border-bvm-title/40 bg-bvm-title/90 py-3.5 text-[0.95rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title"
+            disabled={!canCreateReflectionMeasure}
+            className="w-full rounded-2xl border border-bvm-title/40 bg-bvm-title/90 py-3.5 text-[0.95rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-bvm-title/90"
           >
             Create
           </button>
@@ -601,7 +701,7 @@ export function SelfReflectionSection({ headingId }: Props) {
           id="self-reflection-journal-heading"
           className="font-display text-center text-[1.05rem] font-semibold tracking-[0.04em] text-bvm-title sm:text-[1.15rem]"
         >
-          My self reflection journal
+          MY SELF REFLECTION JOURNAL
         </h3>
 
         {state.reflectionWeeks.length === 0 ? (
@@ -617,7 +717,10 @@ export function SelfReflectionSection({ headingId }: Props) {
               const done = week.measures.filter(isMeasureRatingComplete).length;
               const pct = total > 0 ? Math.round((done / total) * 100) : 0;
               const canSubmit = !week.submitted && total > 0 && done === total;
-              const editable = isWeekEditable(week.id, week.submitted);
+              const isEditing = editingWeekId === week.id;
+              const isEditable = !week.submitted || isEditing;
+              const showProgress = !week.submitted;
+              const showCelebration = celebrationWeekId === week.id && week.submitted;
 
               return (
                 <div
@@ -627,90 +730,102 @@ export function SelfReflectionSection({ headingId }: Props) {
                     week.submitted ? "ring-1 ring-slate-300/60" : "",
                   ].join(" ")}
                 >
+                  {showCelebration ? (
+                    <div className="mb-4 overflow-hidden rounded-2xl border border-teal-200/70 bg-gradient-to-br from-sky-50 via-white to-teal-50 px-4 py-4 shadow-[0_8px_24px_-16px_rgba(43,106,158,0.55)]">
+                      <div className="flex items-start gap-3">
+                        <CelebrationBurst />
+                        <div className="min-w-0 flex-1 pt-0.5">
+                          <p className="font-display text-[1rem] font-semibold text-bvm-title sm:text-[1.05rem]">
+                            Congratulations!
+                          </p>
+                          <p className="mt-1 text-[0.86rem] leading-relaxed text-slate-700 sm:text-[0.92rem]">
+                            You just submitted your first self-reflection journal entry.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setCelebrationWeekId(null)}
+                          className="shrink-0 rounded-full border border-slate-200/80 bg-white/90 px-3 py-1.5 text-[0.72rem] font-semibold text-slate-600 transition-colors hover:bg-white hover:text-bvm-title"
+                          aria-label="Dismiss congratulations message"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+
                   <button
                     type="button"
-                    onClick={() => {
-                      if (
-                        typeof window !== "undefined" &&
-                        !window.confirm(
-                          `Delete ${week.label} and all areas in this week? This cannot be undone.`,
-                        )
-                      ) {
-                        return;
-                      }
-                      removeReflectionWeek(week.id);
-                    }}
+                    onClick={() => removeReflectionWeek(week.id)}
                     className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 sm:right-3 sm:top-3"
                     aria-label={`Delete ${week.label}`}
                   >
                     <IconTrash />
                   </button>
 
-                  <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:gap-3">
-                    <div className="shrink-0 pr-1">
+                  <div className="mb-3 space-y-2 sm:mb-4">
+                    <div className="flex items-center justify-between gap-3">
                       <p className="font-display text-[0.95rem] font-bold text-slate-900 sm:text-base">
                         {week.label}
                       </p>
-                      <div className="mt-1 flex items-center gap-2">
-                        <label className="text-[0.62rem] font-medium text-slate-600 sm:text-[0.65rem]">
-                          Reflection date
-                        </label>
-                        {editable ? (
-                          <input
-                            id={`${week.id}-reflection-date`}
-                            type="date"
-                            value={week.reflectionDate}
-                            onChange={(e) => setReflectionWeekDate(week.id, e.target.value)}
-                            className="rounded-md border border-slate-200/80 bg-white/90 px-2 py-1 text-[0.65rem] font-medium text-slate-700 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.68rem]"
-                          />
-                        ) : (
-                          <span className="rounded-md border border-slate-200/80 bg-white/80 px-2 py-1 text-[0.65rem] font-medium text-slate-700 sm:text-[0.68rem]">
-                            {week.reflectionDate || "—"}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:flex-nowrap">
-                      <div className="flex min-w-0 w-full flex-1 items-center justify-start sm:w-auto">
-                        <div
-                          className="h-2.5 w-full min-w-0 overflow-hidden rounded-full bg-slate-200/90 sm:w-[90%]"
-                          role="progressbar"
-                          aria-valuenow={done}
-                          aria-valuemin={0}
-                          aria-valuemax={total || 1}
-                          aria-label={`${week.label} progress`}
-                        >
-                          <div
-                            className="h-full rounded-full bg-bvm-title transition-[width] duration-300 ease-out"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </div>
-                      <span className="shrink-0 text-[0.65rem] font-medium tabular-nums text-slate-600 sm:text-[0.7rem]">
-                        {total > 0 ? `${done}/${total}` : "0/0"}
-                      </span>
+
                       {week.submitted ? (
                         <button
                           type="button"
-                          onClick={() =>
-                            setEditingWeekIds((prev) => ({
-                              ...prev,
-                              [week.id]: !prev[week.id],
-                            }))
-                          }
-                          className="shrink-0 rounded-full border border-bvm-title/50 bg-white/90 px-3 py-1.5 text-[0.68rem] font-semibold text-bvm-title shadow-sm transition-colors hover:bg-bvm-title hover:text-white sm:text-[0.72rem]"
+                          onClick={() => toggleEditWeek(week.id)}
+                          className="shrink-0 rounded-full border border-bvm-title/45 bg-white/90 px-3 py-1.5 text-[0.72rem] font-semibold text-bvm-title shadow-sm transition-colors hover:bg-bvm-title hover:text-white"
                         >
-                          {editable ? "Done Editing" : "Edit Reflection"}
+                          {isEditing ? "Done Editing" : "Edit Reflection"}
                         </button>
-                      ) : canSubmit ? (
-                        <button
-                          type="button"
-                          onClick={() => submitReflectionWeek(week.id)}
-                          className="shrink-0 rounded-full border border-bvm-title/50 bg-white/90 px-3 py-1.5 text-[0.68rem] font-semibold text-bvm-title shadow-sm transition-colors hover:bg-bvm-title hover:text-white sm:text-[0.72rem]"
-                        >
-                          Submit Reflection
-                        </button>
+                      ) : showProgress ? (
+                        <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+                          <div className="flex min-w-0 flex-1 items-center justify-end">
+                            <div
+                              className="h-2.5 w-full min-w-0 overflow-hidden rounded-full bg-slate-200/90 sm:w-[90%]"
+                              role="progressbar"
+                              aria-valuenow={done}
+                              aria-valuemin={0}
+                              aria-valuemax={total || 1}
+                              aria-label={`${week.label} progress`}
+                            >
+                              <div
+                                className="h-full rounded-full bg-bvm-title transition-[width] duration-300 ease-out"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                          </div>
+                          <span className="shrink-0 text-[0.65rem] font-medium tabular-nums text-slate-600 sm:text-[0.7rem]">
+                            {total > 0 ? `${done}/${total}` : "0/0"}
+                          </span>
+                          {canSubmit ? (
+                            <button
+                              type="button"
+                              onClick={() => handleSubmitWeek(week.id)}
+                              className="shrink-0 rounded-full border border-bvm-title/50 bg-white/90 px-3 py-1.5 text-[0.68rem] font-semibold text-bvm-title shadow-sm transition-colors hover:bg-bvm-title hover:text-white sm:text-[0.72rem]"
+                            >
+                              Submit Reflection
+                            </button>
+                          ) : null}
+                        </div>
                       ) : null}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label
+                        htmlFor={`${week.id}-reflection-date`}
+                        className="text-[0.62rem] font-medium text-slate-600 sm:text-[0.65rem]"
+                      >
+                        Reflection date
+                      </label>
+                      <input
+                        id={`${week.id}-reflection-date`}
+                        type="date"
+                        value={week.reflectionDate}
+                        onChange={(e) => setReflectionWeekDate(week.id, e.target.value)}
+                        readOnly={!isEditable}
+                        aria-readonly={!isEditable}
+                        className="rounded-md border border-slate-200/80 bg-white/90 px-2 py-1 text-[0.65rem] font-medium text-slate-700 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.68rem]"
+                      />
                     </div>
                   </div>
 
@@ -724,13 +839,12 @@ export function SelfReflectionSection({ headingId }: Props) {
                             <p className="text-[0.68rem] font-semibold text-slate-700 sm:text-[0.72rem]">
                               Area {i + 1}:
                             </p>
-                            {editable ? (
+                            {isEditable ? (
                               <input
                                 type="text"
                                 value={m.area}
                                 onChange={(e) => updateReflectionMeasure(m.id, { area: e.target.value })}
-                                placeholder="Area name"
-                                className="mt-0.5 w-full rounded-md border border-slate-200/80 bg-white/85 px-2 py-1 text-[0.75rem] font-medium text-slate-900 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.82rem]"
+                                className="mt-0.5 w-full rounded-lg border border-slate-200/80 bg-white/90 px-2 py-1 text-[0.78rem] font-medium text-slate-900 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.85rem]"
                               />
                             ) : (
                               <p
@@ -748,17 +862,22 @@ export function SelfReflectionSection({ headingId }: Props) {
                             </p>
                           </div>
 
-                          <div className="flex min-w-0 flex-1 items-center overflow-hidden rounded-full border border-sky-200/60 bg-white/25 px-2 py-1.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+                          <div
+                            className={[
+                              "flex min-w-0 flex-1 items-center overflow-hidden border border-sky-200/60 bg-white/25 px-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]",
+                              m.scale === "words" ? "rounded-2xl py-2" : "rounded-full py-1.5",
+                            ].join(" ")}
+                          >
                             <div className="w-full px-1.5">
                               <JournalRatingCell
                                 m={m}
-                                readOnly={!editable}
                                 onPatch={(patch) => updateReflectionMeasure(m.id, patch)}
+                                readOnly={!isEditable}
                               />
                             </div>
                           </div>
 
-                          {editable ? (
+                          {isEditable ? (
                             <button
                               type="button"
                               onClick={() => removeReflectionMeasure(m.id)}
