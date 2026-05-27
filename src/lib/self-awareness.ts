@@ -5,11 +5,11 @@ export const SLIDER_TRACK_WIDTH_PCT = 100;
 export const PILL_BUTTON_GAP_REM = 1.5;
 
 export const SEGMENTED_SOLID_BG = [
-  "#eef5fb",
-  "#dbeaf7",
-  "#bfd9ee",
-  "#8eb8db",
-  "#5f94c5",
+  "#ffffff",
+  "#f7fbff",
+  "#eef6ff",
+  "#d7e7f7",
+  "#9fc4ea",
 ] as const;
 
 export const RATING_SKILLS: { id: string; label: string }[] = [
@@ -100,17 +100,17 @@ export const STORAGE_KEY = "bvm_journal_v1";
  * Frosted glass body — add one of `JOURNAL_GLASS_BORDER.*` for a tinted rim (“effect 1”).
  */
 export const JOURNAL_GLASS_PANEL_BASE =
-  "rounded-[1.25rem] border-2 bg-gradient-to-br from-white/60 via-white/45 to-sky-100/25 px-5 py-8 shadow-[0_1px_0_rgba(43,106,158,0.1),0_10px_40px_-8px_rgba(43,106,158,0.12),inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-md sm:rounded-[1.35rem] sm:px-8 sm:py-9";
+  "rounded-[1.25rem] border bg-white/[0.94] px-5 py-8 shadow-[0_18px_45px_rgba(5,43,99,0.10),inset_0_1px_0_rgba(255,255,255,0.72)] backdrop-blur-md sm:rounded-[1.5rem] sm:px-8 sm:py-9";
 
-/** Distinct rim colors per journal block */
+/** Shared soft blue rims keep journal blocks visually connected. */
 export const JOURNAL_GLASS_BORDER = {
-  skillsRating: "border-sky-500/50",
-  seekingFeedback: "border-indigo-400/50",
-  givingFeedback: "border-rose-400/50",
-  selfReflection: "border-teal-500/50",
-  selfCompassion: "border-amber-500/50",
-  mindfulness: "border-emerald-500/50",
-  emotionalAwareness: "border-violet-500/50",
+  skillsRating: "border-bvm-activeBorder/85",
+  seekingFeedback: "border-bvm-softBorder",
+  givingFeedback: "border-bvm-softBorder",
+  selfReflection: "border-bvm-softBorder",
+  selfCompassion: "border-bvm-softBorder",
+  mindfulness: "border-bvm-softBorder",
+  emotionalAwareness: "border-bvm-softBorder",
 } as const;
 
 export type SelfReflectionScale = "numbers" | "words" | "emojis";

@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { JOURNAL_NAV_ITEMS } from "@/lib/journal-nav";
 
 const activeLinkClass =
-  "border-bvm-title/35 bg-white text-bvm-title shadow-[0_8px_22px_-18px_rgba(43,106,158,0.5)]";
+  "border-bvm-title bg-bvm-title text-white shadow-[0_8px_20px_-14px_rgba(5,43,99,0.58)]";
 const inactiveLinkClass =
-  "border-transparent bg-white/55 text-slate-500 hover:border-bvm-title/20 hover:bg-white/85 hover:text-bvm-title";
+  "border-bvm-softBorder bg-white/[0.88] text-bvm-muted hover:border-bvm-title hover:bg-bvm-title hover:text-white";
 
 export function SectionSideNav() {
   const [isVisible, setIsVisible] = useState(false);
@@ -94,7 +94,7 @@ export function SectionSideNav() {
       ].join(" ")}
       aria-label="Section shortcuts"
     >
-      <nav className="rounded-2xl border border-white/70 bg-white/65 p-2 shadow-[0_18px_42px_-30px_rgba(43,106,158,0.7)] backdrop-blur-md">
+      <nav className="rounded-2xl border border-bvm-softBorder bg-white/[0.86] p-2 shadow-[0_18px_42px_-30px_rgba(5,43,99,0.65)] backdrop-blur-md">
         <ul className="space-y-1.5">
           {JOURNAL_NAV_ITEMS.map(({ id, label }) => {
             const active = activeId === id;
@@ -105,7 +105,7 @@ export function SectionSideNav() {
                   href={`#${id}`}
                   aria-current={active ? "location" : undefined}
                   className={[
-                    "block rounded-xl border px-3 py-2 text-[0.68rem] font-bold uppercase leading-snug tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-bvm-title/20",
+                    "block rounded-full border px-3 py-2 text-[0.68rem] font-bold uppercase leading-snug tracking-wide transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-bvm-action/20",
                     active ? activeLinkClass : inactiveLinkClass,
                   ].join(" ")}
                 >
@@ -118,7 +118,7 @@ export function SectionSideNav() {
         <button
           type="button"
           onClick={scrollToTop}
-          className="mt-2 flex h-9 w-full items-center justify-center rounded-xl border border-slate-200/70 bg-white/70 text-bvm-title transition-colors hover:border-bvm-title/25 hover:bg-white focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+          className="mt-2 flex h-9 w-full items-center justify-center rounded-full border border-bvm-softBorder bg-white/80 text-bvm-title transition-colors hover:border-bvm-title hover:bg-bvm-title hover:text-white focus:outline-none focus:ring-2 focus:ring-bvm-action/20"
           aria-label="Back to top"
           title="Back to top"
         >

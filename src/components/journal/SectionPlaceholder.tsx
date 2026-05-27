@@ -17,7 +17,7 @@ export function SectionPlaceholder({ title, headingId, rimClassName }: Props) {
           {title}
         </h2>
         <div
-          className={`mt-8 min-h-[10rem] rounded-[1.25rem] border-2 bg-white/30 shadow-[0_1px_0_rgba(43,106,158,0.06),inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-[2px] ${rimClassName}`}
+          className={`mt-8 min-h-[10rem] rounded-[1.25rem] border bg-white/[0.88] shadow-[0_12px_32px_rgba(5,43,99,0.08),inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-[2px] ${rimClassName}`}
           aria-hidden
         />
       </section>

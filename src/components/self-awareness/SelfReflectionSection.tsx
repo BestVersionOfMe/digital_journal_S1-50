@@ -40,7 +40,7 @@ const ROW_TRACK_BG = [
   "bg-indigo-300/75",
 ] as const;
 
-const moodStroke = "#2B6A9E";
+const moodStroke = "#052B63";
 
 function MoodFace({ mood, className = "h-12 w-12" }: { mood: 0 | 1 | 2 | 3; className?: string }) {
   const mouth =
@@ -627,8 +627,8 @@ export function SelfReflectionSection({ headingId }: Props) {
             </div>
           </div>
 
-          <div className="rounded-2xl border-2 border-teal-300/35 bg-white/25 px-4 py-4">
-            <div className="text-[0.8125rem] font-medium text-slate-600">Preview:</div>
+          <div className="rounded-2xl border border-bvm-softBorder bg-bvm-pageTop/70 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+            <div className="text-[0.8125rem] font-medium text-bvm-muted">Preview:</div>
 
             {scale === "numbers" && (
               <div className="mt-3">
@@ -705,8 +705,8 @@ export function SelfReflectionSection({ headingId }: Props) {
         </h3>
 
         {state.reflectionWeeks.length === 0 ? (
-          <div className="rounded-[1.25rem] border-2 border-cyan-500/45 bg-gradient-to-br from-sky-50/90 to-indigo-50/40 px-3 py-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:px-5">
-            <p className="text-center text-[0.9rem] leading-relaxed text-slate-600">
+          <div className="rounded-[1.25rem] border border-bvm-softBorder bg-bvm-pageTop px-3 py-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] sm:px-5">
+            <p className="text-center text-[0.9rem] leading-relaxed text-bvm-muted">
               Please create your self reflection measure.
             </p>
           </div>
@@ -726,26 +726,26 @@ export function SelfReflectionSection({ headingId }: Props) {
                 <div
                   key={week.id}
                   className={[
-                    "relative rounded-[1.25rem] border-2 border-cyan-500/45 bg-gradient-to-br from-sky-50/90 to-indigo-50/40 px-3 py-4 pr-11 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:px-5 sm:py-5 sm:pr-14",
-                    week.submitted ? "ring-1 ring-slate-300/60" : "",
+                    "relative rounded-[1.25rem] border border-bvm-softBorder bg-white/[0.92] px-3 py-4 pr-11 shadow-[0_14px_34px_rgba(5,43,99,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] sm:px-5 sm:py-5 sm:pr-14",
+                    week.submitted ? "ring-1 ring-bvm-activeBorder/70" : "",
                   ].join(" ")}
                 >
                   {showCelebration ? (
-                    <div className="mb-4 overflow-hidden rounded-2xl border border-teal-200/70 bg-gradient-to-br from-sky-50 via-white to-teal-50 px-4 py-4 shadow-[0_8px_24px_-16px_rgba(43,106,158,0.55)]">
+                    <div className="mb-4 overflow-hidden rounded-2xl border border-bvm-softBorder bg-gradient-to-br from-bvm-pageTop via-white to-[#EAF4FF] px-4 py-4 shadow-[0_8px_24px_-16px_rgba(5,43,99,0.42)]">
                       <div className="flex items-start gap-3">
                         <CelebrationBurst />
                         <div className="min-w-0 flex-1 pt-0.5">
                           <p className="font-display text-[1rem] font-semibold text-bvm-title sm:text-[1.05rem]">
                             Congratulations!
                           </p>
-                          <p className="mt-1 text-[0.86rem] leading-relaxed text-slate-700 sm:text-[0.92rem]">
+                          <p className="mt-1 text-[0.86rem] leading-relaxed text-bvm-muted sm:text-[0.92rem]">
                             You just submitted your first self-reflection journal entry.
                           </p>
                         </div>
                         <button
                           type="button"
                           onClick={() => setCelebrationWeekId(null)}
-                          className="shrink-0 rounded-full border border-slate-200/80 bg-white/90 px-3 py-1.5 text-[0.72rem] font-semibold text-slate-600 transition-colors hover:bg-white hover:text-bvm-title"
+                          className="shrink-0 rounded-full border border-bvm-softBorder bg-white/90 px-3 py-1.5 text-[0.72rem] font-semibold text-bvm-muted transition-colors hover:border-bvm-title hover:bg-white hover:text-bvm-title"
                           aria-label="Dismiss congratulations message"
                         >
                           Close
@@ -757,7 +757,7 @@ export function SelfReflectionSection({ headingId }: Props) {
                   <button
                     type="button"
                     onClick={() => removeReflectionWeek(week.id)}
-                    className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 sm:right-3 sm:top-3"
+                    className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-bvm-muted/70 transition-colors hover:bg-red-50 hover:text-red-600 sm:right-3 sm:top-3"
                     aria-label={`Delete ${week.label}`}
                   >
                     <IconTrash />
@@ -765,7 +765,7 @@ export function SelfReflectionSection({ headingId }: Props) {
 
                   <div className="mb-3 space-y-2 sm:mb-4">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="font-display text-[0.95rem] font-bold text-slate-900 sm:text-base">
+                      <p className="font-display text-[0.95rem] font-bold text-bvm-text sm:text-base">
                         {week.label}
                       </p>
 
@@ -781,7 +781,7 @@ export function SelfReflectionSection({ headingId }: Props) {
                         <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
                           <div className="flex min-w-0 flex-1 items-center justify-end">
                             <div
-                              className="h-2.5 w-full min-w-0 overflow-hidden rounded-full bg-slate-200/90 sm:w-[90%]"
+                              className="h-2.5 w-full min-w-0 overflow-hidden rounded-full bg-bvm-softBorder/75 sm:w-[90%]"
                               role="progressbar"
                               aria-valuenow={done}
                               aria-valuemin={0}
@@ -794,7 +794,7 @@ export function SelfReflectionSection({ headingId }: Props) {
                               />
                             </div>
                           </div>
-                          <span className="shrink-0 text-[0.65rem] font-medium tabular-nums text-slate-600 sm:text-[0.7rem]">
+                          <span className="shrink-0 text-[0.65rem] font-medium tabular-nums text-bvm-muted sm:text-[0.7rem]">
                             {total > 0 ? `${done}/${total}` : "0/0"}
                           </span>
                           {canSubmit ? (
@@ -813,7 +813,7 @@ export function SelfReflectionSection({ headingId }: Props) {
                     <div className="flex items-center gap-2">
                       <label
                         htmlFor={`${week.id}-reflection-date`}
-                        className="text-[0.62rem] font-medium text-slate-600 sm:text-[0.65rem]"
+                        className="text-[0.62rem] font-medium text-bvm-muted sm:text-[0.65rem]"
                       >
                         Reflection date
                       </label>
@@ -824,19 +824,19 @@ export function SelfReflectionSection({ headingId }: Props) {
                         onChange={(e) => setReflectionWeekDate(week.id, e.target.value)}
                         readOnly={!isEditable}
                         aria-readonly={!isEditable}
-                        className="rounded-md border border-slate-200/80 bg-white/90 px-2 py-1 text-[0.65rem] font-medium text-slate-700 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.68rem]"
+                        className="rounded-md border border-bvm-softBorder bg-white px-2 py-1 text-[0.65rem] font-medium text-bvm-text focus:border-bvm-action focus:outline-none focus:ring-2 focus:ring-bvm-action/15 sm:text-[0.68rem]"
                       />
                     </div>
                   </div>
 
                   {week.measures.length === 0 ? (
-                    <p className="py-6 text-center text-[0.85rem] text-slate-600">No areas in this week yet.</p>
+                    <p className="py-6 text-center text-[0.85rem] text-bvm-muted">No areas in this week yet.</p>
                   ) : (
                     <ul className="space-y-3 sm:space-y-4">
                       {week.measures.map((m, i) => (
                         <li key={m.id} className="flex items-stretch gap-1.5 sm:gap-2">
                           <div className="w-[26%] min-w-0 shrink-0 sm:w-[28%]">
-                            <p className="text-[0.68rem] font-semibold text-slate-700 sm:text-[0.72rem]">
+                            <p className="text-[0.68rem] font-semibold text-bvm-muted sm:text-[0.72rem]">
                               Area {i + 1}:
                             </p>
                             {isEditable ? (
@@ -844,18 +844,18 @@ export function SelfReflectionSection({ headingId }: Props) {
                                 type="text"
                                 value={m.area}
                                 onChange={(e) => updateReflectionMeasure(m.id, { area: e.target.value })}
-                                className="mt-0.5 w-full rounded-lg border border-slate-200/80 bg-white/90 px-2 py-1 text-[0.78rem] font-medium text-slate-900 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.85rem]"
+                                className="mt-0.5 w-full rounded-lg border border-bvm-softBorder bg-white px-2 py-1 text-[0.78rem] font-medium text-bvm-text focus:border-bvm-action focus:outline-none focus:ring-2 focus:ring-bvm-action/15 sm:text-[0.85rem]"
                               />
                             ) : (
                               <p
-                                className="mt-0.5 truncate text-[0.78rem] font-medium text-slate-900 sm:text-[0.85rem]"
+                                className="mt-0.5 truncate text-[0.78rem] font-medium text-bvm-text sm:text-[0.85rem]"
                                 title={m.area || undefined}
                               >
                                 {m.area || "—"}
                               </p>
                             )}
                             <p
-                              className="mt-1 truncate text-[0.62rem] text-slate-500 sm:text-[0.65rem]"
+                              className="mt-1 truncate text-[0.62rem] text-bvm-muted sm:text-[0.65rem]"
                               title={scaleDisplayName(m.scale)}
                             >
                               {scaleDisplayName(m.scale)}
@@ -864,7 +864,7 @@ export function SelfReflectionSection({ headingId }: Props) {
 
                           <div
                             className={[
-                              "flex min-w-0 flex-1 items-center overflow-hidden border border-sky-200/60 bg-white/25 px-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]",
+                              "flex min-w-0 flex-1 items-center overflow-hidden border border-bvm-softBorder bg-bvm-pageTop/70 px-2 shadow-[inset_0_1px_2px_rgba(5,43,99,0.04)]",
                               m.scale === "words" ? "rounded-2xl py-2" : "rounded-full py-1.5",
                             ].join(" ")}
                           >

@@ -77,7 +77,7 @@ function IconNextCircle() {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
         <path
           d="M9 18l6-6-6-6"
-          stroke="#2B6A9E"
+          stroke="#052B63"
           strokeWidth="2.25"
           strokeLinecap="round"
           strokeLinejoin="round"

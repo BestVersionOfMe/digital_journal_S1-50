@@ -13,7 +13,7 @@ export function SegmentedControl({ value, onChange, ariaLabelledBy }: Props) {
     <div
       role="radiogroup"
       aria-labelledby={ariaLabelledBy}
-      className="flex w-full min-w-0 flex-1 overflow-hidden rounded-md border border-[rgba(30,60,90,0.14)]"
+      className="flex w-full min-w-0 flex-1 overflow-hidden rounded-lg border border-bvm-softBorder bg-white"
     >
       {SEGMENTED_SOLID_BG.map((bg, i) => {
         const n = String(i + 1);
@@ -26,13 +26,15 @@ export function SegmentedControl({ value, onChange, ariaLabelledBy }: Props) {
             aria-checked={selected}
             onClick={() => onChange(n)}
             className={[
-              "min-h-[2.75rem] flex-1 border-r border-[rgba(30,60,90,0.14)] px-1 py-[0.45rem] text-[0.95rem] font-semibold text-[#1a1a1a] transition-[filter] last:border-r-0 hover:brightness-[1.03] active:brightness-[0.97]",
+              "min-h-[2.75rem] flex-1 border-r border-bvm-softBorder px-1 py-[0.45rem] text-[0.95rem] font-semibold text-bvm-text transition-all duration-150 last:border-r-0 hover:border-bvm-activeBorder hover:bg-[#EAF4FF] active:brightness-[0.98] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-bvm-action/20",
               selected
-                ? "z-[1] outline outline-2 outline-offset-[-2px] outline-[rgba(0,0,0,0.32)]"
+                ? i === 4
+                  ? "z-[1] border-bvm-title bg-bvm-title text-white shadow-[0_4px_12px_rgba(5,43,99,0.24)]"
+                  : "z-[1] border-bvm-action bg-bvm-action text-white shadow-[0_4px_12px_rgba(31,95,174,0.22)]"
                 : "",
             ].join(" ")}
             style={{
-              backgroundColor: bg,
+              backgroundColor: selected ? undefined : bg,
               backgroundImage: "none",
             }}
           >
