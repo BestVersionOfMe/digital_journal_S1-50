@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useJournalStorage } from "@/hooks/useJournalStorage";
+import {
+  JOURNAL_GLASS_BORDER,
+  JOURNAL_GLASS_PANEL_BASE,
+  newMindfulnessPracticeId,
+  type MindfulnessSessionRecord,
+} from "@/lib/self-awareness";
 
 type Props = { headingId: string };
 
@@ -19,9 +26,6 @@ const exercises = [
       "Exhale slowly and repeat 3 times",
     ],
     emoji: "🧍",
-    accent: "from-emerald-100 to-emerald-50",
-    badge: "bg-emerald-100 text-emerald-700",
-    progress: "bg-emerald-500",
   },
   {
     id: 2,
@@ -38,9 +42,6 @@ const exercises = [
       "Continue for all five fingers",
     ],
     emoji: "✋",
-    accent: "from-blue-100 to-blue-50",
-    badge: "bg-blue-100 text-blue-700",
-    progress: "bg-blue-500",
   },
   {
     id: 3,
@@ -56,9 +57,6 @@ const exercises = [
       "Switch to the other leg and repeat",
     ],
     emoji: "🦶",
-    accent: "from-amber-100 to-amber-50",
-    badge: "bg-amber-100 text-amber-700",
-    progress: "bg-amber-500",
   },
   {
     id: 4,
@@ -74,9 +72,6 @@ const exercises = [
       "Notice the texture as you eat",
     ],
     emoji: "🍎",
-    accent: "from-rose-100 to-rose-50",
-    badge: "bg-rose-100 text-rose-700",
-    progress: "bg-rose-500",
   },
   {
     id: 5,
@@ -92,9 +87,6 @@ const exercises = [
       "Find a third object and notice details about each",
     ],
     emoji: "🎨",
-    accent: "from-purple-100 to-purple-50",
-    badge: "bg-purple-100 text-purple-700",
-    progress: "bg-purple-500",
   },
   {
     id: 6,
@@ -110,9 +102,6 @@ const exercises = [
       "Repeat this cycle 3 times",
     ],
     emoji: "🌬️",
-    accent: "from-sky-100 to-sky-50",
-    badge: "bg-sky-100 text-sky-700",
-    progress: "bg-sky-500",
   },
   {
     id: 7,
@@ -128,9 +117,6 @@ const exercises = [
       "Let the feeling stay with you",
     ],
     emoji: "😊",
-    accent: "from-pink-100 to-pink-50",
-    badge: "bg-pink-100 text-pink-700",
-    progress: "bg-pink-500",
   },
   {
     id: 8,
@@ -146,9 +132,6 @@ const exercises = [
       "Take it all in for one full minute",
     ],
     emoji: "👀",
-    accent: "from-green-100 to-green-50",
-    badge: "bg-green-100 text-green-700",
-    progress: "bg-green-500",
   },
   {
     id: 9,
@@ -164,9 +147,6 @@ const exercises = [
       "Notice sounds you had not heard before",
     ],
     emoji: "👂",
-    accent: "from-orange-100 to-orange-50",
-    badge: "bg-orange-100 text-orange-700",
-    progress: "bg-orange-500",
   },
   {
     id: 10,
@@ -182,31 +162,66 @@ const exercises = [
       "Feel the words within you",
     ],
     emoji: "✨",
-    accent: "from-indigo-100 to-indigo-50",
-    badge: "bg-indigo-100 text-indigo-700",
-    progress: "bg-indigo-500",
   },
 ];
+
+const reflectionPrompts = [
+  "I felt calm",
+  "It was challenging",
+  "I want to try again",
+  "I felt distracted",
+  "It helped me focus",
+  "I feel refreshed",
+];
+
+type Exercise = (typeof exercises)[number];
+
+function formatDuration(seconds: number): string {
+  const safeSeconds = Math.max(0, Math.round(seconds));
+  const mins = Math.floor(safeSeconds / 60);
+  const secs = safeSeconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+function IconTrash() {
+  return (
+    <svg
+      className="h-4 w-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 7h16" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+      <path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+  );
+}
 
 function ExerciseCard({
   exercise,
   isActive,
   onSelect,
-  isCompleted,
   onComplete,
 }: {
-  exercise: (typeof exercises)[0];
+  exercise: Exercise;
   isActive: boolean;
   onSelect: () => void;
-  isCompleted: boolean;
-  onComplete: () => void;
+  onComplete: (exercise: Exercise, durationSeconds: number) => void;
 }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeLeft, setTimeLeft] = useState(exercise.duration * 60);
   const [currentStep, setCurrentStep] = useState(0);
 
   const totalTime = exercise.duration * 60;
-  const progressPercent = ((totalTime - timeLeft) / totalTime) * 100;
+  const elapsedSeconds = totalTime - timeLeft;
+  const progressPercent = (elapsedSeconds / totalTime) * 100;
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
@@ -228,16 +243,16 @@ function ExerciseCard({
     };
   }, [isPlaying, timeLeft]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
   const resetTimer = () => {
-    setTimeLeft(exercise.duration * 60);
+    setTimeLeft(totalTime);
     setIsPlaying(false);
     setCurrentStep(0);
+  };
+
+  const handleMarkDone = () => {
+    const recordedSeconds = Math.max(0, elapsedSeconds);
+    onComplete(exercise, recordedSeconds);
+    resetTimer();
   };
 
   if (!isActive) {
@@ -245,54 +260,45 @@ function ExerciseCard({
       <button
         type="button"
         onClick={onSelect}
-        className={`w-full h-full flex flex-col items-center justify-start rounded-2xl border p-2 sm:p-3 text-center transition duration-200 ${
-          isCompleted
-            ? "border-green-200 bg-green-50"
-            : "border-slate-100 bg-white hover:-translate-y-1 hover:shadow-md"
-        }`}
+        className="flex min-h-[4.75rem] w-full flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-white/50 px-1.5 py-2 text-center transition-colors hover:bg-white/75"
       >
-        {/* Shrunk the icon size even further here! */}
-        <div
-          className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-base sm:text-xl mb-2 shadow-sm"
-        >
-          {isCompleted ? "✅" : exercise.emoji}
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/70 text-lg shadow-sm sm:h-9 sm:w-9 sm:text-xl">
+          {exercise.emoji}
         </div>
-        
-        <h3 className="font-medium text-slate-900 text-[10px] sm:text-xs line-clamp-2 leading-tight">
+        <h3 className="mt-2 line-clamp-2 text-[0.58rem] font-semibold leading-tight text-slate-900 sm:text-[0.68rem]">
           {exercise.title}
         </h3>
+        <span className="mt-0.5 text-[0.55rem] font-medium text-slate-500 sm:text-[0.62rem]">
+          {exercise.duration} min
+        </span>
       </button>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm w-full">
-      <div className="bg-slate-50 border-b border-slate-100 p-5">
+    <div className="w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 shadow-sm">
+      <div className="border-b border-slate-200/70 bg-white/50 p-5">
         <div className="flex items-start justify-between gap-4">
-          
-          <div className="flex gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">
+          <div className="flex min-w-0 flex-1 items-start gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-3xl shadow-sm">
               {exercise.emoji}
             </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-slate-900">{exercise.title}</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-700">{exercise.description}</p>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[1rem] font-semibold text-slate-800">{exercise.title}</h3>
+              <p className="mt-1 text-sm leading-6 text-slate-600">{exercise.description}</p>
             </div>
           </div>
-          
-          {/* Top Right "X" Close Button */}
           <button
             type="button"
             onClick={() => {
               setIsPlaying(false);
               onSelect();
             }}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200/50 text-slate-500 transition hover:bg-slate-200 hover:text-slate-800"
-            aria-label="Close"
+            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/60 hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+            aria-label="Close exercise"
           >
-            ✕
+            ×
           </button>
-
         </div>
       </div>
 
@@ -300,11 +306,11 @@ function ExerciseCard({
         <div className="mb-5">
           <div className="mb-2 flex items-center justify-between text-sm">
             <span className="font-medium text-slate-700">Timer</span>
-            <span className="font-semibold text-slate-900">{formatTime(timeLeft)}</span>
+            <span className="font-semibold tabular-nums text-slate-900">{formatDuration(timeLeft)}</span>
           </div>
-          <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200/80">
             <div
-              className={`h-full rounded-full ${exercise.progress} transition-all duration-1000`}
+              className="h-full rounded-full bg-bvm-title transition-all duration-1000"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -314,7 +320,7 @@ function ExerciseCard({
           <button
             type="button"
             onClick={resetTimer}
-            className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className="rounded-xl border border-slate-200/80 bg-white/60 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
           >
             Reset
           </button>
@@ -322,42 +328,38 @@ function ExerciseCard({
           <button
             type="button"
             onClick={() => setIsPlaying((prev) => !prev)}
-            className="rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+            className="rounded-xl bg-bvm-title px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90"
           >
             {isPlaying ? "Pause" : "Start"}
           </button>
 
           <button
             type="button"
-            onClick={() => {
-              onComplete();
-              setIsPlaying(false);
-              onSelect();
-            }}
-            className="rounded-full border border-green-300 px-4 py-2 text-sm font-medium text-green-700 transition hover:bg-green-50"
+            onClick={handleMarkDone}
+            className="rounded-xl border border-bvm-title/40 bg-white/70 px-4 py-2 text-sm font-semibold text-bvm-title transition-colors hover:bg-white"
           >
             Mark Done
           </button>
         </div>
 
-        <div className="rounded-2xl bg-slate-50 p-4">
-          <h4 className="mb-3 font-semibold text-slate-900">Steps to Follow</h4>
+        <div className="rounded-2xl border border-slate-200/80 bg-white/50 p-4">
+          <h4 className="mb-3 text-[1rem] font-semibold text-slate-800">Steps to Follow</h4>
           <div className="space-y-2">
             {exercise.steps.map((step, index) => (
               <button
-                key={index}
+                key={step}
                 type="button"
                 onClick={() => setCurrentStep(index)}
-                className={`flex w-full items-start gap-3 rounded-xl p-3 text-left transition ${
+                className={`flex w-full items-start gap-3 rounded-xl p-3 text-left transition-colors ${
                   currentStep === index
-                    ? "bg-slate-900 text-white"
-                    : "bg-white text-slate-800 hover:bg-slate-100"
+                    ? "bg-bvm-title text-white"
+                    : "bg-white/70 text-slate-800 hover:bg-white"
                 }`}
               >
                 <span
                   className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                     currentStep === index
-                      ? "bg-white text-slate-900"
+                      ? "bg-white text-bvm-title"
                       : "bg-slate-200 text-slate-700"
                   }`}
                 >
@@ -373,70 +375,235 @@ function ExerciseCard({
   );
 }
 
-export function MindfulnessSection({ headingId }: Props) {
-  const [activeExercise, setActiveExercise] = useState<number | null>(null);
-  const [completedExercises, setCompletedExercises] = useState<number[]>([]);
-  const [reflection, setReflection] = useState("");
-  const [selectedPrompts, setSelectedPrompts] = useState<string[]>([]);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+function appendPrompt(current: string, prompt: string): string {
+  const parts = current
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (parts.some((part) => part.toLowerCase() === prompt.toLowerCase())) return current;
+  return [...parts, prompt].join(", ");
+}
 
-  const reflectionPrompts = [
-    "I felt calm",
-    "It was challenging",
-    "I want to try again",
-    "I felt distracted",
-    "It helped me focus",
-    "I feel refreshed",
-  ];
-
-  const handleComplete = (id: number) => {
-    setCompletedExercises((prev) => (prev.includes(id) ? prev : [...prev, id]));
-  };
-
-  const progressPercent = (completedExercises.length / exercises.length) * 100;
+function MindfulnessSessionCard({
+  session,
+  isEditing,
+  hasActiveEdit,
+  onEditToggle,
+  onDeleteSession,
+  onSubmitSession,
+  onDateChange,
+  onSessionFeelChange,
+  onPracticeDelete,
+}: {
+  session: MindfulnessSessionRecord;
+  isEditing: boolean;
+  hasActiveEdit: boolean;
+  onEditToggle: () => void;
+  onDeleteSession: () => void;
+  onSubmitSession: () => void;
+  onDateChange: (practiceDate: string) => void;
+  onSessionFeelChange: (feelText: string) => void;
+  onPracticeDelete: (practiceId: string) => void;
+}) {
+  const isEditable = isEditing || (!session.submitted && !hasActiveEdit);
+  const totalDurationSeconds = session.practices.reduce(
+    (total, practice) => total + practice.durationSeconds,
+    0,
+  );
 
   return (
-    <div className="relative z-10 mx-auto max-w-2xl px-4 py-12 pointer-events-auto">
-      
-      <div className="mb-8 text-center">
-        <h2 id={headingId} className="text-xl sm:text-2xl font-bold tracking-widest text-[#3a648b] uppercase font-carmensin">
-          10+ MINI MINDFULNESS EXERCISES
-        </h2>
+    <article
+      className={`rounded-2xl border border-slate-200/80 bg-white/60 px-4 py-4 shadow-sm ${
+        session.submitted ? "ring-1 ring-slate-300/50" : ""
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h4 className="text-[1rem] font-semibold text-slate-800">{session.label}</h4>
+          <p className="mt-1 text-[0.72rem] font-medium text-slate-500">
+            Total practice time: {formatDuration(totalDurationSeconds)}
+          </p>
+          <div className="mt-2 flex items-center gap-2">
+            <label
+              htmlFor={`${session.id}-practice-date`}
+              className="text-[0.65rem] font-medium text-slate-600"
+            >
+              Practice date
+            </label>
+            <input
+              id={`${session.id}-practice-date`}
+              type="date"
+              value={session.practiceDate}
+              onChange={(e) => onDateChange(e.target.value)}
+              readOnly={!isEditable}
+              aria-readonly={!isEditable}
+              className="rounded-md border border-slate-200/80 bg-white/90 px-2 py-1 text-[0.68rem] font-medium text-slate-700 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15"
+            />
+          </div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1">
+          {session.submitted ? (
+            <button
+              type="button"
+              onClick={onEditToggle}
+              className="rounded-lg border border-bvm-title/35 bg-white/80 px-3 py-1.5 text-[0.72rem] font-semibold text-bvm-title transition-colors hover:bg-bvm-title hover:text-white"
+            >
+              {isEditing ? "Done Editing" : "Edit"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onSubmitSession}
+              disabled={session.practices.length === 0 || !isEditable}
+              className="rounded-lg bg-bvm-title px-3 py-1.5 text-[0.72rem] font-semibold text-white transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Submit
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onDeleteSession}
+            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/60 hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+            aria-label={`Delete ${session.label}`}
+          >
+            <IconTrash />
+          </button>
+        </div>
       </div>
 
-      <div className="rounded-[2rem] border border-blue-50/50 bg-white/95 p-6 sm:p-10 shadow-sm space-y-12">
-        
-        <section aria-labelledby={headingId}>
-          <p className="mb-6 text-sm leading-7 text-slate-600 sm:text-base text-center">
-            Tap an exercise to practice being present. Each one takes just a few minutes and
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {session.practices.map((practice, index) => (
+          <div
+            key={practice.id}
+            className="rounded-xl border border-slate-200/80 bg-white/50 px-3 py-2.5"
+          >
+            <div className="flex items-start gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/70 text-lg shadow-sm">
+                {practice.exerciseEmoji || "•"}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[0.8rem] font-semibold text-slate-800" title={practice.exerciseTitle}>
+                  {practice.exerciseTitle}
+                </p>
+                <p className="mt-1 text-[0.72rem] text-slate-500">
+                  {formatDuration(practice.durationSeconds)}
+                </p>
+              </div>
+              {isEditable ? (
+                <button
+                  type="button"
+                  onClick={() => onPracticeDelete(practice.id)}
+                  className="shrink-0 rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-white/60 hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+                  aria-label={`Delete exercise ${index + 1}`}
+                >
+                  <IconTrash />
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4">
+        <label
+          htmlFor={`${session.id}-feel`}
+          className="mb-2 block text-[0.72rem] font-semibold text-slate-700"
+        >
+          How did this practice make you feel?
+        </label>
+        {isEditable ? (
+          <>
+            <input
+              id={`${session.id}-feel`}
+              type="text"
+              value={session.feelText}
+              onChange={(e) => onSessionFeelChange(e.target.value)}
+              placeholder="Type how the whole practice felt, or choose a prompt below"
+              className="w-full rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 text-[0.9375rem] text-slate-800 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+            />
+            <div className="mt-2 flex flex-wrap gap-2">
+              {reflectionPrompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => onSessionFeelChange(appendPrompt(session.feelText, prompt))}
+                  className="rounded-full border border-slate-200/80 bg-white/60 px-3 py-1.5 text-[0.72rem] font-medium text-slate-600 transition-colors hover:bg-white hover:text-bvm-title"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="rounded-xl border border-slate-200/80 bg-white/50 px-4 py-3 text-[0.9rem] text-slate-700">
+            {session.feelText.trim() || "No feeling added"}
+          </p>
+        )}
+      </div>
+    </article>
+  );
+}
+
+export function MindfulnessSection({ headingId }: Props) {
+  const {
+    state,
+    addMindfulnessPractice,
+    updateMindfulnessSessionFeel,
+    removeMindfulnessPractice,
+    removeMindfulnessSession,
+    setMindfulnessSessionDate,
+    submitMindfulnessSession,
+  } = useJournalStorage();
+  const [activeExercise, setActiveExercise] = useState<number | null>(null);
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (state.mindfulnessSessions.length === 0) {
+      setEditingSessionId(null);
+    }
+  }, [state.mindfulnessSessions.length]);
+
+  const handleComplete = useCallback(
+    (exercise: Exercise, durationSeconds: number) => {
+      addMindfulnessPractice(
+        {
+          id: newMindfulnessPracticeId(),
+          exerciseId: exercise.id,
+          exerciseTitle: exercise.title,
+          exerciseEmoji: exercise.emoji,
+          durationSeconds,
+        },
+        editingSessionId ?? undefined,
+      );
+      setActiveExercise(null);
+    },
+    [addMindfulnessPractice, editingSessionId],
+  );
+
+  return (
+    <div className="mx-auto max-w-[40rem] px-5 pb-16 pt-8 sm:max-w-[42rem] sm:px-8 sm:pb-20 sm:pt-10">
+      <section
+        className={`relative ${JOURNAL_GLASS_PANEL_BASE} ${JOURNAL_GLASS_BORDER.mindfulness} space-y-10`}
+        aria-labelledby={headingId}
+      >
+        <section aria-labelledby="mindfulness-exercises-heading">
+          <h3
+            id="mindfulness-exercises-heading"
+            className="font-display text-center text-[1.25rem] font-semibold tracking-[0.04em] text-bvm-title sm:text-[1.375rem]"
+          >
+            10+ MINI MINDFULNESS EXERCISES
+          </h3>
+
+          <p className="mt-6 text-sm leading-7 text-slate-600 sm:text-base">
+            Try these quick exercises to practice being present. Each one takes just a few minutes and
             helps build focus, calm, and self-awareness.
           </p>
 
-          <div className="mb-8 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 shadow-sm">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-900">Your Progress</span>
-              <span className="text-sm text-slate-600">
-                {completedExercises.length} of {exercises.length} completed
-              </span>
-            </div>
-            <div className="h-3 w-full overflow-hidden rounded-full bg-white">
-              <div
-                className="h-full rounded-full bg-blue-600 transition-all duration-300"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-4 gap-2 sm:gap-4">
-            {exercises.map((exercise, index) => {
+          <div className="mt-6 grid grid-cols-5 gap-2 sm:gap-3">
+            {exercises.map((exercise) => {
               const isActive = activeExercise === exercise.id;
-              
-              let gridClass = "col-span-1";
-              if (isActive) {
-                gridClass = "col-span-4";
-              } else if (index === 8 && activeExercise === null) {
-                gridClass = "col-span-1 col-start-2";
-              }
+              const gridClass = isActive ? "col-span-5" : "col-span-1";
 
               return (
                 <div key={exercise.id} className={gridClass}>
@@ -446,8 +613,7 @@ export function MindfulnessSection({ headingId }: Props) {
                     onSelect={() =>
                       setActiveExercise((prev) => (prev === exercise.id ? null : exercise.id))
                     }
-                    isCompleted={completedExercises.includes(exercise.id)}
-                    onComplete={() => handleComplete(exercise.id)}
+                    onComplete={handleComplete}
                   />
                 </div>
               );
@@ -455,83 +621,47 @@ export function MindfulnessSection({ headingId }: Props) {
           </div>
         </section>
 
-        <hr className="border-slate-100" />
+        <section className="space-y-4" aria-labelledby="mindfulness-reflection-heading">
+          <h3
+            id="mindfulness-reflection-heading"
+            className="font-display text-center text-[1.05rem] font-semibold tracking-[0.04em] text-bvm-title sm:text-[1.15rem]"
+          >
+            MY MINDFULNESS PRACTICE RECORDS
+          </h3>
 
-        <section>
-          <h3 className="mb-4 text-xl font-medium text-[#3a648b] font-carmensin">Mindfulness Reflection</h3>
-          <p className="mb-6 text-sm leading-7 text-slate-600">
-            After trying an exercise, take a moment to reflect on how it felt.
-          </p>
-
-          <div className="space-y-6 rounded-3xl bg-slate-50 p-6">
-            <div>
-              <label className="mb-3 block text-sm font-semibold text-slate-900">
-                How did the exercise make you feel?
-              </label>
-              <p className="mb-3 text-xs text-slate-500">Select all that apply:</p>
-
-              <div className="flex flex-wrap gap-2">
-                {reflectionPrompts.map((prompt) => {
-                  const selected = selectedPrompts.includes(prompt);
-
-                  return (
-                    <button
-                      key={prompt}
-                      type="button"
-                      onClick={() =>
-                        setSelectedPrompts((prev) =>
-                          prev.includes(prompt)
-                            ? prev.filter((p) => p !== prompt)
-                            : [...prev, prompt]
-                        )
-                      }
-                      className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                        selected
-                          ? "bg-slate-900 text-white"
-                          : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-200"
-                      }`}
-                    >
-                      {prompt}
-                    </button>
-                  );
-                })}
-              </div>
+          {state.mindfulnessSessions.length === 0 ? (
+            <div className="rounded-2xl border border-slate-200/80 bg-white/50 px-4 py-8">
+              <p className="text-center text-[0.9rem] leading-relaxed text-slate-600">
+                Complete an exercise to start a mindfulness practice record.
+              </p>
             </div>
-
-            <div>
-              <label className="mb-3 block text-sm font-semibold text-slate-900">
-                Write about your experience:
-              </label>
-              <textarea
-                value={reflection}
-                onChange={(e) => {
-                  setReflection(e.target.value);
-                  setIsSubmitted(false);
-                }}
-                placeholder="What did you notice during the exercise? How do you feel now compared to before?"
-                className="min-h-[130px] w-full rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-800 outline-none transition focus:border-slate-900"
-              />
-              
-              <div className="mt-4 flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsSubmitted(true)}
-                  disabled={reflection.trim() === ""}
-                  className="rounded-xl bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Submit Reflection
-                </button>
-                {isSubmitted && (
-                  <span className="text-sm font-medium text-green-600 animate-pulse">
-                    ✓ Saved successfully!
-                  </span>
-                )}
-              </div>
+          ) : (
+            <div className="space-y-4">
+              {state.mindfulnessSessions.map((session) => (
+                <MindfulnessSessionCard
+                  key={session.id}
+                  session={session}
+                  isEditing={editingSessionId === session.id}
+                  hasActiveEdit={editingSessionId != null}
+                  onEditToggle={() =>
+                    setEditingSessionId((current) => (current === session.id ? null : session.id))
+                  }
+                  onDeleteSession={() => removeMindfulnessSession(session.id)}
+                  onSubmitSession={() => {
+                    submitMindfulnessSession(session.id);
+                    setEditingSessionId(null);
+                  }}
+                  onDateChange={(practiceDate) => setMindfulnessSessionDate(session.id, practiceDate)}
+                  onSessionFeelChange={(feelText) =>
+                    updateMindfulnessSessionFeel(session.id, feelText)
+                  }
+                  onPracticeDelete={removeMindfulnessPractice}
+                />
+              ))}
             </div>
-          </div>
+          )}
         </section>
-
-      </div>
+      </section>
     </div>
   );
 }
