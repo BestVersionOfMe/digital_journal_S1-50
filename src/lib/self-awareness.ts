@@ -217,6 +217,23 @@ export type ReflectionWeekBlock = {
   submitted: boolean;
 };
 
+export type MindfulnessPracticeRecord = {
+  id: string;
+  exerciseId: number;
+  exerciseTitle: string;
+  exerciseEmoji: string;
+  durationSeconds: number;
+};
+
+export type MindfulnessSessionRecord = {
+  id: string;
+  label: string;
+  practiceDate: string;
+  practices: MindfulnessPracticeRecord[];
+  feelText: string;
+  submitted: boolean;
+};
+
 export type SkillRatingSnapshot = {
   id: string;
   date: string;
@@ -241,6 +258,7 @@ export type JournalState = {
   reflectionEmojiIndex: number;
   /** Self-reflection journal weeks (Week One, Week Two, …) */
   reflectionWeeks: ReflectionWeekBlock[];
+  mindfulnessSessions: MindfulnessSessionRecord[];
   /** Seeking Feedback — who to ask */
   seekingFeedbackText: string;
   /** After Submit: textarea is read-only until user taps edit */
@@ -270,6 +288,7 @@ export function defaultJournalState(): JournalState {
     reflectionCustomWordPool: [],
     reflectionEmojiIndex: 1,
     reflectionWeeks: [],
+    mindfulnessSessions: [],
     seekingFeedbackText: "",
     seekingFeedbackSubmitted: false,
     givingFeedbackText: "",
@@ -293,6 +312,18 @@ export function newReflectionMeasureId(): string {
 
 export function newReflectionWeekId(): string {
   return newReflectionMeasureId();
+}
+
+export function newMindfulnessPracticeId(): string {
+  return newReflectionMeasureId();
+}
+
+export function newMindfulnessSessionId(): string {
+  return newReflectionMeasureId();
+}
+
+export function mindfulnessSessionLabelFromIndex(index: number): string {
+  return `Practice ${index + 1}`;
 }
 
 export function todayIsoDateLocal(): string {
@@ -375,6 +406,27 @@ export function exportMarkdown(state: JournalState): string {
       for (const m of w.measures) {
         lines.push(`  - **${m.area || "_(empty)_"}** — ${m.scale}`);
       }
+    }
+  }
+  if (state.mindfulnessSessions.length > 0) {
+    lines.push("");
+    lines.push("## Mindfulness practice records");
+    lines.push("");
+    for (const session of state.mindfulnessSessions) {
+      const totalSeconds = session.practices.reduce(
+        (total, practice) => total + practice.durationSeconds,
+        0,
+      );
+      const totalMins = Math.floor(totalSeconds / 60);
+      const totalSecs = String(totalSeconds % 60).padStart(2, "0");
+      lines.push(`- ${session.label}${session.submitted ? " (submitted)" : ""}: ${session.practiceDate}`);
+      lines.push(`  - Total practice time: ${totalMins}:${totalSecs}`);
+      for (const practice of session.practices) {
+        const mins = Math.floor(practice.durationSeconds / 60);
+        const secs = String(practice.durationSeconds % 60).padStart(2, "0");
+        lines.push(`  - **${practice.exerciseTitle}** — ${mins}:${secs}`);
+      }
+      if (session.feelText.trim()) lines.push(`  - Feel: ${session.feelText.trim()}`);
     }
   }
   lines.push("");

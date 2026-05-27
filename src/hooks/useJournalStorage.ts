@@ -8,12 +8,16 @@ import {
   ensureCustomPoolCoversSelections,
   isMeasureRatingComplete,
   legacyWordChoiceToLabel,
+  mindfulnessSessionLabelFromIndex,
+  newMindfulnessSessionId,
   newReflectionWeekId,
   normalizeCustomWordPool,
   normalizeWordTokens,
   todayIsoDateLocal,
   weekLabelFromIndex,
   type JournalState,
+  type MindfulnessPracticeRecord,
+  type MindfulnessSessionRecord,
   type ReflectionWeekBlock,
   type ReflectionWordChoice,
   type SelfReflectionMeasure,
@@ -146,6 +150,56 @@ function parseWeekBlock(raw: unknown): ReflectionWeekBlock | null {
   return { id: o.id, label, reflectionDate, measures, submitted };
 }
 
+function parseMindfulnessPractice(raw: unknown): MindfulnessPracticeRecord | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.id !== "string" || typeof o.exerciseTitle !== "string") return null;
+  const exerciseId =
+    typeof o.exerciseId === "number" && Number.isFinite(o.exerciseId)
+      ? Math.max(0, Math.round(o.exerciseId))
+      : 0;
+  const durationSeconds =
+    typeof o.durationSeconds === "number" && Number.isFinite(o.durationSeconds)
+      ? Math.max(0, Math.round(o.durationSeconds))
+      : 0;
+  return {
+    id: o.id,
+    exerciseId,
+    exerciseTitle: o.exerciseTitle,
+    exerciseEmoji: typeof o.exerciseEmoji === "string" ? o.exerciseEmoji : "",
+    durationSeconds,
+  };
+}
+
+function parseMindfulnessSession(raw: unknown, index: number): MindfulnessSessionRecord | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.id !== "string") return null;
+  const practices = Array.isArray(o.practices)
+    ? o.practices
+        .map(parseMindfulnessPractice)
+        .filter((practice): practice is MindfulnessPracticeRecord => practice != null)
+    : [];
+  const legacyFeelText = Array.isArray(o.practices)
+    ? (o.practices as unknown[])
+        .map((practice) =>
+          practice && typeof practice === "object"
+            ? (practice as Record<string, unknown>).feelText
+            : "",
+        )
+        .filter((feel): feel is string => typeof feel === "string" && feel.trim().length > 0)
+        .join(", ")
+    : "";
+  return {
+    id: o.id,
+    label: typeof o.label === "string" ? o.label : mindfulnessSessionLabelFromIndex(index),
+    practiceDate: isIsoDate(o.practiceDate) ? o.practiceDate : todayIsoDateLocal(),
+    practices,
+    feelText: typeof o.feelText === "string" ? o.feelText : legacyFeelText,
+    submitted: o.submitted === true,
+  };
+}
+
 function parseStored(raw: string | null): JournalState {
   const base = defaultJournalState();
   if (!raw) return base;
@@ -275,6 +329,16 @@ function parseStored(raw: string | null): JournalState {
     let seekingFeedbackText = base.seekingFeedbackText;
     if (typeof data.seekingFeedbackText === "string") seekingFeedbackText = data.seekingFeedbackText;
 
+    const mindfulnessSessions = Array.isArray(data.mindfulnessSessions)
+      ? (data.mindfulnessSessions as unknown[])
+          .map(parseMindfulnessSession)
+          .filter((session): session is MindfulnessSessionRecord => session != null)
+          .map((session, index) => ({
+            ...session,
+            label: mindfulnessSessionLabelFromIndex(index),
+          }))
+      : base.mindfulnessSessions;
+
     let givingFeedbackText = base.givingFeedbackText;
     if (typeof data.givingFeedbackText === "string") {
       givingFeedbackText = data.givingFeedbackText;
@@ -305,6 +369,7 @@ function parseStored(raw: string | null): JournalState {
       reflectionCustomWordPool,
       reflectionEmojiIndex,
       reflectionWeeks,
+      mindfulnessSessions,
       seekingFeedbackText,
       seekingFeedbackSubmitted,
       givingFeedbackText,
@@ -621,6 +686,119 @@ export function useJournalStorage() {
     });
   }, []);
 
+  const addMindfulnessPractice = useCallback((practice: MindfulnessPracticeRecord, sessionId?: string) => {
+    setState((prev) => {
+      const sessions = [...prev.mindfulnessSessions];
+      const activeIdx = sessionId
+        ? sessions.findIndex((session) => session.id === sessionId)
+        : sessions.findIndex((session) => !session.submitted);
+      if (activeIdx === -1) {
+        sessions.push({
+          id: newMindfulnessSessionId(),
+          label: mindfulnessSessionLabelFromIndex(sessions.length),
+          practiceDate: todayIsoDateLocal(),
+          practices: [practice],
+          feelText: "",
+          submitted: false,
+        });
+      } else {
+        const session = sessions[activeIdx]!;
+        sessions[activeIdx] = {
+          ...session,
+          practices: [...session.practices, practice],
+        };
+      }
+      const next = { ...prev, mindfulnessSessions: sessions };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
+
+  const updateMindfulnessSessionFeel = useCallback(
+    (sessionId: string, feelText: string) => {
+      setState((prev) => {
+        const next = {
+          ...prev,
+          mindfulnessSessions: prev.mindfulnessSessions.map((session) =>
+            session.id === sessionId ? { ...session, feelText } : session,
+          ),
+        };
+        if (typeof window !== "undefined") {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
+  const removeMindfulnessPractice = useCallback((id: string) => {
+    setState((prev) => {
+      const next = {
+        ...prev,
+        mindfulnessSessions: prev.mindfulnessSessions.map((session) => ({
+          ...session,
+          practices: session.practices.filter((practice) => practice.id !== id),
+        })),
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
+
+  const removeMindfulnessSession = useCallback((sessionId: string) => {
+    setState((prev) => {
+      const mindfulnessSessions = prev.mindfulnessSessions
+        .filter((session) => session.id !== sessionId)
+        .map((session, index) => ({
+          ...session,
+          label: mindfulnessSessionLabelFromIndex(index),
+        }));
+      const next = { ...prev, mindfulnessSessions };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
+
+  const setMindfulnessSessionDate = useCallback((sessionId: string, practiceDate: string) => {
+    if (!isIsoDate(practiceDate)) return;
+    setState((prev) => {
+      const next = {
+        ...prev,
+        mindfulnessSessions: prev.mindfulnessSessions.map((session) =>
+          session.id === sessionId ? { ...session, practiceDate } : session,
+        ),
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
+
+  const submitMindfulnessSession = useCallback((sessionId: string) => {
+    setState((prev) => {
+      const next = {
+        ...prev,
+        mindfulnessSessions: prev.mindfulnessSessions.map((session) =>
+          session.id === sessionId && session.practices.length > 0
+            ? { ...session, submitted: true }
+            : session,
+        ),
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
+
   const setSeekingFeedbackText = useCallback((next: string) => {
     setState((prev) => {
       const updated = { ...prev, seekingFeedbackText: next };
@@ -680,6 +858,12 @@ export function useJournalStorage() {
     setReflectionWeekDate,
     updateReflectionMeasure,
     submitReflectionWeek,
+    addMindfulnessPractice,
+    updateMindfulnessSessionFeel,
+    removeMindfulnessPractice,
+    removeMindfulnessSession,
+    setMindfulnessSessionDate,
+    submitMindfulnessSession,
     setSeekingFeedbackText,
     setGivingFeedbackText,
     setSeekingFeedbackSubmitted,
