@@ -183,6 +183,18 @@ function formatDuration(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
+function renderExerciseButtonTitle(title: string) {
+  const words = title.trim().split(/\s+/);
+  if (words.length !== 2) return title;
+
+  return (
+    <>
+      <span className="block">{words[0]}</span>
+      <span className="block">{words[1]}</span>
+    </>
+  );
+}
+
 function IconTrash() {
   return (
     <svg
@@ -260,15 +272,15 @@ function ExerciseCard({
       <button
         type="button"
         onClick={onSelect}
-        className="flex min-h-[4.75rem] w-full flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-white/50 px-1.5 py-2 text-center transition-colors hover:bg-white/75"
+        className="flex min-h-[4.75rem] w-full flex-col items-center justify-center rounded-xl border border-bvm-softBorder bg-white/[0.88] px-1.5 py-2 text-center shadow-[0_8px_18px_rgba(5,43,99,0.08),inset_0_1px_0_rgba(255,255,255,0.85)] transition-all duration-150 hover:-translate-y-px hover:border-bvm-activeBorder hover:bg-white hover:shadow-[0_12px_24px_rgba(5,43,99,0.12),inset_0_1px_0_rgba(255,255,255,0.95)] focus:outline-none focus:ring-2 focus:ring-bvm-action/20"
       >
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/70 text-lg shadow-sm sm:h-9 sm:w-9 sm:text-xl">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-bvm-softBorder bg-bvm-pageTop text-lg shadow-[0_4px_10px_rgba(5,43,99,0.08)] sm:h-9 sm:w-9 sm:text-xl">
           {exercise.emoji}
         </div>
-        <h3 className="mt-2 line-clamp-2 text-[0.58rem] font-semibold leading-tight text-slate-900 sm:text-[0.68rem]">
-          {exercise.title}
+        <h3 className="mt-2 text-[0.58rem] font-semibold leading-tight text-bvm-text sm:text-[0.68rem]">
+          {renderExerciseButtonTitle(exercise.title)}
         </h3>
-        <span className="mt-0.5 text-[0.55rem] font-medium text-slate-500 sm:text-[0.62rem]">
+        <span className="mt-0.5 text-[0.55rem] font-medium text-bvm-muted sm:text-[0.62rem]">
           {exercise.duration} min
         </span>
       </button>
@@ -472,21 +484,21 @@ function MindfulnessSessionCard({
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
         {session.practices.map((practice, index) => (
           <div
             key={practice.id}
-            className="rounded-xl border border-slate-200/80 bg-white/50 px-3 py-2.5"
+            className="rounded-xl border border-bvm-softBorder bg-white/70 px-2.5 py-2.5 shadow-[0_6px_16px_rgba(5,43,99,0.06)]"
           >
-            <div className="flex items-start gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/70 text-lg shadow-sm">
+            <div className="flex items-start gap-2">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-bvm-softBorder bg-bvm-pageTop text-base shadow-[0_3px_8px_rgba(5,43,99,0.07)]">
                 {practice.exerciseEmoji || "•"}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[0.8rem] font-semibold text-slate-800" title={practice.exerciseTitle}>
+                <p className="truncate text-[0.75rem] font-semibold text-bvm-text" title={practice.exerciseTitle}>
                   {practice.exerciseTitle}
                 </p>
-                <p className="mt-1 text-[0.72rem] text-slate-500">
+                <p className="mt-0.5 text-[0.68rem] text-bvm-muted">
                   {formatDuration(practice.durationSeconds)}
                 </p>
               </div>
@@ -494,7 +506,7 @@ function MindfulnessSessionCard({
                 <button
                   type="button"
                   onClick={() => onPracticeDelete(practice.id)}
-                  className="shrink-0 rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-white/60 hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+                  className="shrink-0 rounded-lg p-1 text-bvm-muted transition-colors hover:bg-white/80 hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-action/20"
                   aria-label={`Delete exercise ${index + 1}`}
                 >
                   <IconTrash />

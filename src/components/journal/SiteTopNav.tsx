@@ -44,14 +44,14 @@ export function SiteTopNav() {
   return (
     <>
       <header
-        className={`fixed top-0 z-50 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-md transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 z-50 w-full border-b border-[rgba(159,196,234,0.45)] bg-white/[0.86] shadow-[0_8px_24px_-22px_rgba(5,43,99,0.45)] backdrop-blur-md transition-transform duration-300 ease-in-out ${
           isVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
         <div className="flex flex-col sm:flex-row w-full items-start sm:items-center justify-between gap-3 px-4 py-3 sm:px-8 sm:py-3.5 lg:px-12">
           <Link
             href="/"
-            className="shrink-0 font-display text-[0.95rem] font-semibold tracking-[0.06em] text-bvm-title sm:text-base"
+            className="shrink-0 font-display text-[0.95rem] font-bold tracking-[0.1em] text-bvm-title sm:text-base"
           >
             BEST VERSION OF ME
           </Link>
@@ -70,7 +70,7 @@ export function SiteTopNav() {
                 return (
                   <span
                     key={href}
-                    className="cursor-default whitespace-nowrap text-[0.75rem] font-medium text-slate-400 sm:text-sm block"
+                    className="block cursor-default whitespace-nowrap text-[0.75rem] font-medium text-bvm-muted/65 sm:text-sm"
                     aria-disabled="true"
                   >
                     {label}
@@ -83,10 +83,10 @@ export function SiteTopNav() {
                   key={href}
                   href={href}
                   className={[
-                    "whitespace-nowrap text-[0.75rem] font-medium transition-colors sm:text-sm block",
+                    "block whitespace-nowrap text-[0.75rem] font-medium transition-colors sm:text-sm",
                     active
-                      ? "text-bvm-title underline decoration-bvm-title/40 underline-offset-4"
-                      : "text-slate-600 hover:text-bvm-title",
+                      ? "text-bvm-title underline decoration-bvm-title underline-offset-4"
+                      : "text-bvm-muted hover:text-bvm-title",
                   ].join(" ")}
                 >
                   {label}

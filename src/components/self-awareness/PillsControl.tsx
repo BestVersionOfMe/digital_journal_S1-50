@@ -26,10 +26,10 @@ export function PillsControl({ value, onChange, ariaLabelledBy }: Props) {
             aria-checked={selected}
             onClick={() => onChange(n)}
             className={[
-              "min-h-[2.75rem] min-w-[2.5rem] flex-1 rounded-full border px-2 py-[0.45rem] text-[0.95rem] font-semibold transition-colors",
+              "min-h-[2.75rem] min-w-[2.5rem] flex-1 rounded-full border px-2 py-[0.45rem] text-[0.95rem] font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-bvm-action/20",
               selected
-                ? "border-bvm-title bg-bvm-title/10 text-[#1a1a1a] ring-2 ring-bvm-title/35"
-                : "border-slate-300/90 bg-white/70 text-[#1a1a1a] hover:bg-white",
+                ? "border-bvm-action bg-bvm-action text-white shadow-[0_4px_12px_rgba(31,95,174,0.22)]"
+                : "border-bvm-softBorder bg-white text-bvm-text hover:border-bvm-activeBorder hover:bg-[#EAF4FF]",
             ].join(" ")}
           >
             {n}

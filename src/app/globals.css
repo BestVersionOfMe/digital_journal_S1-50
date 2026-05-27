@@ -21,7 +21,15 @@
   }
 
   ::selection {
-    background-color: rgba(43, 106, 158, 0.12);
+    background-color: rgba(31, 95, 174, 0.16);
+  }
+
+  body {
+    color: #102a43;
+  }
+
+  :focus-visible {
+    outline-color: #1f5fae;
   }
 }
 
