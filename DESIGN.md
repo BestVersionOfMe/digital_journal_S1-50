@@ -109,7 +109,9 @@ All Self-Awareness page state is stored through `src/hooks/useJournalStorage.ts`
 STORAGE_KEY = "bvm_journal_v1"
 ```
 
-The state shape is defined as `JournalState` in `src/lib/self-awareness.ts`. The bottom-page report should be generated from this same state with `buildSelfAwarenessReport(state)`, rather than creating a second storage source.
+The state shape is defined as `JournalState` in `src/lib/self-awareness.ts`. The bottom-page report should be exported from this same state with `buildSelfAwarenessReportHtml(state)`, rather than creating a second storage source.
+
+The page should not show the report as raw Markdown. Use an `Export PDF` action that opens a print-ready report layout and lets the browser save it as PDF.
 
 ## Responsive Rules
 

@@ -1,21 +1,52 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useJournalStorage } from "@/hooks/useJournalStorage";
 import {
-  buildSelfAwarenessReport,
-  JOURNAL_COLLAPSE_BUTTON_CLASS,
+  buildSelfAwarenessReportHtml,
   JOURNAL_GLASS_BORDER,
   JOURNAL_GLASS_PANEL_BASE,
-  JOURNAL_RECORDS_SHELL_CLASS,
+  JOURNAL_PRIMARY_BUTTON_CLASS,
   JOURNAL_SUBHEADING_CLASS,
   STORAGE_KEY,
 } from "@/lib/self-awareness";
 
 export function JournalPageFooter() {
   const { state } = useJournalStorage();
-  const [reportOpen, setReportOpen] = useState(false);
-  const report = useMemo(() => buildSelfAwarenessReport(state), [state]);
+
+  const handleExportPdf = () => {
+    const frame = document.createElement("iframe");
+    frame.title = "Self-Awareness PDF export";
+    frame.style.position = "fixed";
+    frame.style.right = "0";
+    frame.style.bottom = "0";
+    frame.style.width = "0";
+    frame.style.height = "0";
+    frame.style.border = "0";
+    document.body.appendChild(frame);
+
+    const reportWindow = frame.contentWindow;
+    const reportDocument = reportWindow?.document;
+    if (!reportWindow || !reportDocument) {
+      frame.remove();
+      return;
+    }
+
+    const cleanup = () => {
+      window.setTimeout(() => frame.remove(), 0);
+    };
+
+    reportWindow.onafterprint = cleanup;
+    reportDocument.open();
+    reportDocument.write(buildSelfAwarenessReportHtml(state));
+    reportDocument.close();
+    window.setTimeout(() => {
+      reportWindow.focus();
+      reportWindow.print();
+    }, 250);
+    window.setTimeout(() => {
+      if (document.body.contains(frame)) frame.remove();
+    }, 60000);
+  };
 
   return (
     <div className="mx-auto max-w-[40rem] px-5 pb-12 sm:max-w-[42rem] sm:px-8">
@@ -23,36 +54,23 @@ export function JournalPageFooter() {
         className={`${JOURNAL_GLASS_PANEL_BASE} ${JOURNAL_GLASS_BORDER.emotionalAwareness}`}
         aria-labelledby="self-awareness-report-heading"
       >
-        <div className="flex items-center justify-between gap-3">
-          <h2 id="self-awareness-report-heading" className={JOURNAL_SUBHEADING_CLASS}>
-            SELF-AWARENESS REPORT
-          </h2>
-          <button
-            type="button"
-            className={JOURNAL_COLLAPSE_BUTTON_CLASS}
-            aria-expanded={reportOpen}
-            onClick={() => setReportOpen((open) => !open)}
-          >
-            {reportOpen ? "Collapse" : "Expand"}
-          </button>
-        </div>
-        <p className="mt-3 text-[0.85rem] leading-relaxed text-bvm-muted">
-          All saved page inputs are stored locally in one journal record: {STORAGE_KEY}.
-        </p>
-
-        {reportOpen ? (
-          <pre
-            className={`${JOURNAL_RECORDS_SHELL_CLASS} mt-5 max-h-[28rem] overflow-auto whitespace-pre-wrap text-[0.78rem] leading-6 text-bvm-fg`}
-          >
-            {report}
-          </pre>
-        ) : (
-          <div className={`${JOURNAL_RECORDS_SHELL_CLASS} mt-5`}>
-            <p className="text-[0.85rem] text-bvm-muted">
-              Expand to view the combined report for this Self-Awareness page.
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 id="self-awareness-report-heading" className={`${JOURNAL_SUBHEADING_CLASS} text-left`}>
+              SELF-AWARENESS REPORT
+            </h2>
+            <p className="mt-3 text-[0.85rem] leading-relaxed text-bvm-muted">
+              Export a print-ready PDF report from the saved local journal record: {STORAGE_KEY}.
             </p>
           </div>
-        )}
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            className={`${JOURNAL_PRIMARY_BUTTON_CLASS} shrink-0 px-5 py-3`}
+          >
+            Export PDF
+          </button>
+        </div>
       </section>
 
       <footer className="mt-6 flex justify-start sm:mt-8">
