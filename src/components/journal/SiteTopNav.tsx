@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React, { useState, useEffect } from "react";
 
@@ -51,9 +52,17 @@ export function SiteTopNav() {
         <div className="flex flex-col sm:flex-row w-full items-start sm:items-center justify-between gap-3 px-4 py-3 sm:px-8 sm:py-3.5 lg:px-12">
           <Link
             href="/"
-            className="shrink-0 font-display text-[0.95rem] font-bold uppercase tracking-[0.1em] text-bvm-title sm:text-base"
+            className="flex shrink-0 items-center"
+            aria-label="Global Community Sports home"
           >
-            BEST VERSION OF ME
+            <Image
+              src="/brand/global-community-sports-logo.png"
+              alt="Global Community Sports"
+              width={760}
+              height={305}
+              priority
+              className="h-10 w-auto sm:h-11"
+            />
           </Link>
 
           <nav
