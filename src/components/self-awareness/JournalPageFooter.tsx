@@ -7,7 +7,6 @@ import {
   JOURNAL_GLASS_PANEL_BASE,
   JOURNAL_PRIMARY_BUTTON_CLASS,
   JOURNAL_SUBHEADING_CLASS,
-  STORAGE_KEY,
 } from "@/lib/self-awareness";
 
 export function JournalPageFooter() {
@@ -60,7 +59,8 @@ export function JournalPageFooter() {
               SELF-AWARENESS REPORT
             </h2>
             <p className="mt-3 text-[0.85rem] leading-relaxed text-bvm-muted">
-              Export a print-ready PDF report from the saved local journal record: {STORAGE_KEY}.
+              Create a polished summary of your self-awareness ratings, reflections, mindfulness
+              practice, and feedback notes.
             </p>
           </div>
           <button
