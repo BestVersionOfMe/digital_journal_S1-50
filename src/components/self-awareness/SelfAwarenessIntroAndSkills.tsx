@@ -192,7 +192,7 @@ export function SelfAwarenessIntroAndSkills() {
           </div>
 
           {hasSavedRatingRecords ? (
-            <div className={`mt-5 ${JOURNAL_RECORDS_SHELL_CLASS}`}>
+            <div className="mt-5">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-[0.82rem] font-medium text-bvm-muted">
                   {state.skillRatingSnapshots.length} saved rating record
@@ -280,7 +280,7 @@ export function SelfAwarenessIntroAndSkills() {
                   })}
                 </div>
               ) : (
-                <p className="mt-4 rounded-xl border border-bvm-border bg-white/70 px-4 py-3 text-[0.85rem] text-bvm-muted">
+                <p className={`mt-4 ${JOURNAL_RECORDS_SHELL_CLASS} text-[0.85rem] text-bvm-muted`}>
                   Saved rating records are collapsed.
                 </p>
               )}

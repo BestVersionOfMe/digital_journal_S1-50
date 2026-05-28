@@ -48,9 +48,9 @@ The shared panel constants live in `src/lib/self-awareness.ts`.
 
 Nested cards should be soft and quiet:
 
-- Record group shell: `JOURNAL_RECORDS_SHELL_CLASS`.
+- Empty and collapsed record states: `JOURNAL_RECORDS_SHELL_CLASS`.
 - Individual saved record card: `JOURNAL_RECORD_CARD_CLASS`.
-- Empty saved-record states should use the same record shell.
+- Expanded record lists should not add another wrapper frame around the cards.
 - Repeating record areas must stay inside their parent section card.
 
 The following repeating areas must share this pattern:
@@ -67,6 +67,7 @@ Saved-record areas should have a consistent collapse control.
 - Show `Collapse` when expanded and `Expand` when collapsed.
 - Keep `aria-expanded` on the toggle button.
 - Collapsed state should still show a small summary inside `JOURNAL_RECORDS_SHELL_CLASS`.
+- Expanded state should show the saved cards directly, with only spacing between cards.
 
 ## Buttons
 

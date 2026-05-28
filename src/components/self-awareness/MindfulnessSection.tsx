@@ -672,7 +672,7 @@ export function MindfulnessSection({ headingId }: Props) {
               </p>
             </div>
           ) : (
-            <div className={`${JOURNAL_RECORDS_SHELL_CLASS} space-y-4`}>
+            <div className="space-y-4">
               {state.mindfulnessSessions.map((session) => (
                 <MindfulnessSessionCard
                   key={session.id}

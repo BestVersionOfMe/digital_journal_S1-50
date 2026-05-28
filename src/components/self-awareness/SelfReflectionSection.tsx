@@ -754,7 +754,7 @@ export function SelfReflectionSection({ headingId }: Props) {
             </p>
           </div>
         ) : (
-          <div className={`${JOURNAL_RECORDS_SHELL_CLASS} space-y-5`}>
+          <div className="space-y-5">
             {state.reflectionWeeks.map((week) => {
               const total = week.measures.length;
               const done = week.measures.filter(isMeasureRatingComplete).length;
