@@ -604,7 +604,7 @@ export function SelfReflectionSection({ headingId }: Props) {
         <div className="space-y-6">
           <div>
             <h3 className="font-display text-[1rem] font-semibold text-bvm-title sm:text-[1.05rem]">
-              Choose what to measure
+              Choose what to reflect on
             </h3>
             <label className="mt-4 block text-[0.8125rem] font-medium text-bvm-fg">Area</label>
             <input
@@ -653,7 +653,7 @@ export function SelfReflectionSection({ headingId }: Props) {
           </div>
 
           <div className="rounded-2xl border border-bvm-border bg-bvm-softBlue/35 px-4 py-4">
-            <div className="text-[0.8125rem] font-medium text-bvm-muted">Preview:</div>
+            <div className="text-[0.8125rem] font-medium text-bvm-muted">Rating options</div>
 
             {scale === "numbers" && (
               <div className="mt-3">
@@ -749,7 +749,7 @@ export function SelfReflectionSection({ headingId }: Props) {
         {state.reflectionWeeks.length === 0 ? (
           <div className={`${JOURNAL_RECORDS_SHELL_CLASS} px-3 py-10 sm:px-5`}>
             <p className="text-center text-[0.9rem] leading-relaxed text-bvm-muted">
-              Please create your self reflection measure.
+              Add a reflection area to start your journal.
             </p>
           </div>
         ) : !reflectionRecordsOpen ? (

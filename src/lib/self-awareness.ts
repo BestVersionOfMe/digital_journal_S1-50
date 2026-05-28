@@ -414,7 +414,7 @@ export function exportMarkdown(state: JournalState): string {
     lines.push("");
   }
 
-  lines.push("## Self reflection (demo)");
+  lines.push("## Self reflection");
   lines.push("");
   lines.push(`- Area: ${state.reflectionArea.trim() || "_(empty)_"}`);
   lines.push(`- Scoring scale: ${state.reflectionScale}`);
@@ -516,11 +516,11 @@ export function buildSelfAwarenessReport(state: JournalState): string {
   }
 
   lines.push("");
-  lines.push("## Self reflection setup");
-  lines.push(`- Area draft: ${state.reflectionArea.trim() || empty}`);
+  lines.push("## Current self reflection choices");
+  lines.push(`- Current reflection area: ${state.reflectionArea.trim() || empty}`);
   lines.push(`- Scoring scale: ${state.reflectionScale}`);
-  lines.push(`- Number preview: ${state.reflectionNumberValue}`);
-  lines.push(`- Word preview: ${state.reflectionWordTokens.join(", ") || empty}`);
+  lines.push(`- Number rating: ${state.reflectionNumberValue}`);
+  lines.push(`- Selected words: ${state.reflectionWordTokens.join(", ") || empty}`);
 
   lines.push("");
   lines.push("## Self reflection journal records");
@@ -869,7 +869,7 @@ export function buildSelfAwarenessReportHtml(state: JournalState): string {
       <header>
         <div class="brand">Best Version of Me</div>
         <h1>Self-Awareness Report</h1>
-        <p class="meta">Generated ${escapeReportHtml(generatedAt)} from local journal data.</p>
+        <p class="meta">Prepared ${escapeReportHtml(generatedAt)} from your saved journal entries.</p>
       </header>
 
       <section class="summary-grid">
@@ -887,12 +887,12 @@ export function buildSelfAwarenessReportHtml(state: JournalState): string {
       <h2>Self Compassion</h2>
       ${compassionRows}
 
-      <h2>Self Reflection Setup</h2>
+      <h2>Current Self Reflection Choices</h2>
       <article class="record-card">
-        <p><strong>Area draft:</strong> ${reportText(state.reflectionArea)}</p>
+        <p><strong>Current reflection area:</strong> ${reportText(state.reflectionArea)}</p>
         <p><strong>Scoring scale:</strong> ${escapeReportHtml(state.reflectionScale)}</p>
-        <p><strong>Number preview:</strong> ${state.reflectionNumberValue}</p>
-        <p><strong>Word preview:</strong> ${reportText(state.reflectionWordTokens.join(", "))}</p>
+        <p><strong>Number rating:</strong> ${state.reflectionNumberValue}</p>
+        <p><strong>Selected words:</strong> ${reportText(state.reflectionWordTokens.join(", "))}</p>
       </article>
 
       <h2>Self Reflection Journal Records</h2>
@@ -911,7 +911,7 @@ export function buildSelfAwarenessReportHtml(state: JournalState): string {
         <p>${reportText(state.givingFeedbackText)}</p>
       </article>
 
-      <footer>Stored locally under ${escapeReportHtml(STORAGE_KEY)}.</footer>
+      <footer>Created by the Best Version of Me digital journal.</footer>
     </main>
   </body>
 </html>`;
