@@ -44,14 +44,14 @@ export function SiteTopNav() {
   return (
     <>
       <header
-        className={`fixed top-0 z-50 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-md transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 z-50 w-full border-b border-bvm-borderStrong/55 bg-white/[0.92] shadow-[0_16px_42px_-30px_rgba(5,43,99,0.55)] backdrop-blur-md transition-transform duration-300 ease-in-out ${
           isVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
         <div className="flex flex-col sm:flex-row w-full items-start sm:items-center justify-between gap-3 px-4 py-3 sm:px-8 sm:py-3.5 lg:px-12">
           <Link
             href="/"
-            className="shrink-0 font-display text-[0.95rem] font-semibold tracking-[0.06em] text-bvm-title sm:text-base"
+            className="shrink-0 font-display text-[0.95rem] font-bold uppercase tracking-[0.1em] text-bvm-title sm:text-base"
           >
             BEST VERSION OF ME
           </Link>
@@ -70,7 +70,7 @@ export function SiteTopNav() {
                 return (
                   <span
                     key={href}
-                    className="cursor-default whitespace-nowrap text-[0.75rem] font-medium text-slate-400 sm:text-sm block"
+                    className="block cursor-default whitespace-nowrap text-[0.75rem] font-medium text-bvm-muted/65 sm:text-sm"
                     aria-disabled="true"
                   >
                     {label}
@@ -83,10 +83,10 @@ export function SiteTopNav() {
                   key={href}
                   href={href}
                   className={[
-                    "whitespace-nowrap text-[0.75rem] font-medium transition-colors sm:text-sm block",
+                    "block whitespace-nowrap rounded-full border px-3 py-1.5 text-[0.75rem] font-medium transition-all sm:text-sm",
                     active
-                      ? "text-bvm-title underline decoration-bvm-title/40 underline-offset-4"
-                      : "text-slate-600 hover:text-bvm-title",
+                      ? "border-bvm-title bg-bvm-title text-white shadow-[0_8px_18px_-12px_rgba(5,43,99,0.5)]"
+                      : "border-transparent text-bvm-muted hover:border-bvm-borderStrong hover:bg-bvm-softBlue hover:text-bvm-title",
                   ].join(" ")}
                 >
                   {label}

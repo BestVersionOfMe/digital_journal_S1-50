@@ -3,8 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useJournalStorage } from "@/hooks/useJournalStorage";
 import {
+  JOURNAL_COLLAPSE_BUTTON_CLASS,
   JOURNAL_GLASS_BORDER,
   JOURNAL_GLASS_PANEL_BASE,
+  JOURNAL_ICON_BUTTON_CLASS,
+  JOURNAL_PRIMARY_BUTTON_CLASS,
+  JOURNAL_RECORD_CARD_CLASS,
+  JOURNAL_RECORDS_SHELL_CLASS,
+  JOURNAL_SUBHEADING_CLASS,
   newMindfulnessPracticeId,
   type MindfulnessSessionRecord,
 } from "@/lib/self-awareness";
@@ -176,6 +182,19 @@ const reflectionPrompts = [
 
 type Exercise = (typeof exercises)[number];
 
+function ExerciseTitle({ title }: { title: string }) {
+  const words = title.trim().split(/\s+/);
+  if (words.length === 2) {
+    return (
+      <>
+        <span className="block">{words[0]}</span>
+        <span className="block">{words[1]}</span>
+      </>
+    );
+  }
+  return title;
+}
+
 function formatDuration(seconds: number): string {
   const safeSeconds = Math.max(0, Math.round(seconds));
   const mins = Math.floor(safeSeconds / 60);
@@ -260,15 +279,15 @@ function ExerciseCard({
       <button
         type="button"
         onClick={onSelect}
-        className="flex min-h-[4.75rem] w-full flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-white/50 px-1.5 py-2 text-center transition-colors hover:bg-white/75"
+        className="flex min-h-[4.75rem] w-full flex-col items-center justify-center rounded-2xl border border-bvm-border bg-white/80 px-1.5 py-2 text-center shadow-[0_8px_18px_-16px_rgba(5,43,99,0.42),inset_0_1px_0_rgba(255,255,255,0.85)] transition-all hover:-translate-y-0.5 hover:border-bvm-borderStrong hover:bg-white hover:shadow-[0_14px_24px_-18px_rgba(5,43,99,0.42)]"
       >
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/70 text-lg shadow-sm sm:h-9 sm:w-9 sm:text-xl">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-bvm-softBlue text-lg shadow-sm sm:h-9 sm:w-9 sm:text-xl">
           {exercise.emoji}
         </div>
-        <h3 className="mt-2 line-clamp-2 text-[0.58rem] font-semibold leading-tight text-slate-900 sm:text-[0.68rem]">
-          {exercise.title}
+        <h3 className="mt-2 line-clamp-2 text-[0.58rem] font-semibold leading-tight text-bvm-fg sm:text-[0.68rem]">
+          <ExerciseTitle title={exercise.title} />
         </h3>
-        <span className="mt-0.5 text-[0.55rem] font-medium text-slate-500 sm:text-[0.62rem]">
+        <span className="mt-0.5 text-[0.55rem] font-medium text-bvm-muted sm:text-[0.62rem]">
           {exercise.duration} min
         </span>
       </button>
@@ -276,16 +295,16 @@ function ExerciseCard({
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 shadow-sm">
-      <div className="border-b border-slate-200/70 bg-white/50 p-5">
+    <div className="w-full overflow-hidden rounded-2xl border border-bvm-border bg-white/85 shadow-[0_14px_34px_-26px_rgba(5,43,99,0.3)]">
+      <div className="border-b border-bvm-border bg-bvm-softBlue/45 p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 flex-1 items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-3xl shadow-sm">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">
               {exercise.emoji}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-[1rem] font-semibold text-slate-800">{exercise.title}</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-600">{exercise.description}</p>
+              <h3 className="text-[1rem] font-semibold text-bvm-fg">{exercise.title}</h3>
+              <p className="mt-1 text-sm leading-6 text-bvm-muted">{exercise.description}</p>
             </div>
           </div>
           <button
@@ -294,7 +313,7 @@ function ExerciseCard({
               setIsPlaying(false);
               onSelect();
             }}
-            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/60 hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+            className="rounded-lg p-2 text-bvm-muted transition-colors hover:bg-white/80 hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-action/20"
             aria-label="Close exercise"
           >
             ×
@@ -305,12 +324,12 @@ function ExerciseCard({
       <div className="p-5">
         <div className="mb-5">
           <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="font-medium text-slate-700">Timer</span>
-            <span className="font-semibold tabular-nums text-slate-900">{formatDuration(timeLeft)}</span>
+            <span className="font-medium text-bvm-muted">Timer</span>
+            <span className="font-semibold tabular-nums text-bvm-fg">{formatDuration(timeLeft)}</span>
           </div>
-          <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200/80">
+          <div className="h-3 w-full overflow-hidden rounded-full bg-bvm-softBlue">
             <div
-              className="h-full rounded-full bg-bvm-title transition-all duration-1000"
+              className="h-full rounded-full bg-bvm-action transition-all duration-1000"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -320,7 +339,7 @@ function ExerciseCard({
           <button
             type="button"
             onClick={resetTimer}
-            className="rounded-xl border border-slate-200/80 bg-white/60 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
+            className="rounded-xl border border-bvm-border bg-white/80 px-4 py-2 text-sm font-medium text-bvm-fg transition-colors hover:bg-white"
           >
             Reset
           </button>
@@ -328,7 +347,7 @@ function ExerciseCard({
           <button
             type="button"
             onClick={() => setIsPlaying((prev) => !prev)}
-            className="rounded-xl bg-bvm-title px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90"
+            className="rounded-xl bg-bvm-title px-5 py-2 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(5,43,99,0.18)] transition-all hover:-translate-y-0.5 hover:bg-bvm-accent"
           >
             {isPlaying ? "Pause" : "Start"}
           </button>
@@ -336,14 +355,14 @@ function ExerciseCard({
           <button
             type="button"
             onClick={handleMarkDone}
-            className="rounded-xl border border-bvm-title/40 bg-white/70 px-4 py-2 text-sm font-semibold text-bvm-title transition-colors hover:bg-white"
+            className="rounded-xl border border-bvm-borderStrong bg-white/80 px-4 py-2 text-sm font-semibold text-bvm-title transition-colors hover:bg-white"
           >
             Mark Done
           </button>
         </div>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-white/50 p-4">
-          <h4 className="mb-3 text-[1rem] font-semibold text-slate-800">Steps to Follow</h4>
+        <div className="rounded-2xl border border-bvm-border bg-bvm-softBlue/35 p-4">
+          <h4 className="mb-3 text-[1rem] font-semibold text-bvm-fg">Steps to Follow</h4>
           <div className="space-y-2">
             {exercise.steps.map((step, index) => (
               <button
@@ -352,15 +371,15 @@ function ExerciseCard({
                 onClick={() => setCurrentStep(index)}
                 className={`flex w-full items-start gap-3 rounded-xl p-3 text-left transition-colors ${
                   currentStep === index
-                    ? "bg-bvm-title text-white"
-                    : "bg-white/70 text-slate-800 hover:bg-white"
+                    ? "bg-bvm-title text-white shadow-[0_8px_18px_-12px_rgba(5,43,99,0.45)]"
+                    : "bg-white/80 text-bvm-fg hover:bg-white"
                 }`}
               >
                 <span
                   className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                     currentStep === index
                       ? "bg-white text-bvm-title"
-                      : "bg-slate-200 text-slate-700"
+                      : "bg-bvm-softBlue text-bvm-muted"
                   }`}
                 >
                   {index + 1}
@@ -413,20 +432,20 @@ function MindfulnessSessionCard({
 
   return (
     <article
-      className={`rounded-2xl border border-slate-200/80 bg-white/60 px-4 py-4 shadow-sm ${
-        session.submitted ? "ring-1 ring-slate-300/50" : ""
+      className={`${JOURNAL_RECORD_CARD_CLASS} ${
+        session.submitted ? "ring-1 ring-bvm-borderStrong/55" : ""
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h4 className="text-[1rem] font-semibold text-slate-800">{session.label}</h4>
-          <p className="mt-1 text-[0.72rem] font-medium text-slate-500">
+          <h4 className="text-[1rem] font-semibold text-bvm-fg">{session.label}</h4>
+          <p className="mt-1 text-[0.72rem] font-medium text-bvm-muted">
             Total practice time: {formatDuration(totalDurationSeconds)}
           </p>
           <div className="mt-2 flex items-center gap-2">
             <label
               htmlFor={`${session.id}-practice-date`}
-              className="text-[0.65rem] font-medium text-slate-600"
+              className="text-[0.65rem] font-medium text-bvm-muted"
             >
               Practice date
             </label>
@@ -437,7 +456,7 @@ function MindfulnessSessionCard({
               onChange={(e) => onDateChange(e.target.value)}
               readOnly={!isEditable}
               aria-readonly={!isEditable}
-              className="rounded-md border border-slate-200/80 bg-white/90 px-2 py-1 text-[0.68rem] font-medium text-slate-700 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15"
+              className="rounded-md border border-bvm-border bg-white px-2 py-1 text-[0.68rem] font-medium text-bvm-fg focus:border-bvm-action focus:outline-none focus:ring-2 focus:ring-bvm-action/15"
             />
           </div>
         </div>
@@ -447,7 +466,7 @@ function MindfulnessSessionCard({
             <button
               type="button"
               onClick={onEditToggle}
-              className="rounded-lg border border-bvm-title/35 bg-white/80 px-3 py-1.5 text-[0.72rem] font-semibold text-bvm-title transition-colors hover:bg-bvm-title hover:text-white"
+              className={JOURNAL_COLLAPSE_BUTTON_CLASS}
             >
               {isEditing ? "Done Editing" : "Edit"}
             </button>
@@ -456,7 +475,7 @@ function MindfulnessSessionCard({
               type="button"
               onClick={onSubmitSession}
               disabled={session.practices.length === 0 || !isEditable}
-              className="rounded-lg bg-bvm-title px-3 py-1.5 text-[0.72rem] font-semibold text-white transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40"
+              className={`${JOURNAL_PRIMARY_BUTTON_CLASS} px-3 py-1.5 text-[0.72rem]`}
             >
               Submit
             </button>
@@ -464,7 +483,7 @@ function MindfulnessSessionCard({
           <button
             type="button"
             onClick={onDeleteSession}
-            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/60 hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+            className={JOURNAL_ICON_BUTTON_CLASS}
             aria-label={`Delete ${session.label}`}
           >
             <IconTrash />
@@ -472,21 +491,21 @@ function MindfulnessSessionCard({
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {session.practices.map((practice, index) => (
           <div
             key={practice.id}
-            className="rounded-xl border border-slate-200/80 bg-white/50 px-3 py-2.5"
+            className="rounded-xl border border-bvm-border bg-bvm-softBlue/35 px-3 py-2.5"
           >
             <div className="flex items-start gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/70 text-lg shadow-sm">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-lg shadow-sm">
                 {practice.exerciseEmoji || "•"}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[0.8rem] font-semibold text-slate-800" title={practice.exerciseTitle}>
+                <p className="truncate text-[0.8rem] font-semibold text-bvm-fg" title={practice.exerciseTitle}>
                   {practice.exerciseTitle}
                 </p>
-                <p className="mt-1 text-[0.72rem] text-slate-500">
+                <p className="mt-1 text-[0.72rem] text-bvm-muted">
                   {formatDuration(practice.durationSeconds)}
                 </p>
               </div>
@@ -494,7 +513,7 @@ function MindfulnessSessionCard({
                 <button
                   type="button"
                   onClick={() => onPracticeDelete(practice.id)}
-                  className="shrink-0 rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-white/60 hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+                  className={`${JOURNAL_ICON_BUTTON_CLASS} shrink-0 p-1.5 hover:bg-white`}
                   aria-label={`Delete exercise ${index + 1}`}
                 >
                   <IconTrash />
@@ -508,7 +527,7 @@ function MindfulnessSessionCard({
       <div className="mt-4">
         <label
           htmlFor={`${session.id}-feel`}
-          className="mb-2 block text-[0.72rem] font-semibold text-slate-700"
+          className="mb-2 block text-[0.72rem] font-semibold text-bvm-fg"
         >
           How did this practice make you feel?
         </label>
@@ -520,7 +539,7 @@ function MindfulnessSessionCard({
               value={session.feelText}
               onChange={(e) => onSessionFeelChange(e.target.value)}
               placeholder="Type how the whole practice felt, or choose a prompt below"
-              className="w-full rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 text-[0.9375rem] text-slate-800 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+              className="w-full rounded-xl border border-bvm-border bg-white px-4 py-3 text-[0.9375rem] text-bvm-fg placeholder:text-bvm-muted/70 focus:border-bvm-action focus:outline-none focus:ring-2 focus:ring-bvm-action/20"
             />
             <div className="mt-2 flex flex-wrap gap-2">
               {reflectionPrompts.map((prompt) => (
@@ -528,7 +547,7 @@ function MindfulnessSessionCard({
                   key={prompt}
                   type="button"
                   onClick={() => onSessionFeelChange(appendPrompt(session.feelText, prompt))}
-                  className="rounded-full border border-slate-200/80 bg-white/60 px-3 py-1.5 text-[0.72rem] font-medium text-slate-600 transition-colors hover:bg-white hover:text-bvm-title"
+                  className="rounded-full border border-bvm-border bg-white/80 px-3 py-1.5 text-[0.72rem] font-medium text-bvm-muted transition-colors hover:border-bvm-borderStrong hover:bg-white hover:text-bvm-title"
                 >
                   {prompt}
                 </button>
@@ -536,7 +555,7 @@ function MindfulnessSessionCard({
             </div>
           </>
         ) : (
-          <p className="rounded-xl border border-slate-200/80 bg-white/50 px-4 py-3 text-[0.9rem] text-slate-700">
+          <p className="rounded-xl border border-bvm-border bg-bvm-softBlue/35 px-4 py-3 text-[0.9rem] text-bvm-muted">
             {session.feelText.trim() || "No feeling added"}
           </p>
         )}
@@ -557,6 +576,7 @@ export function MindfulnessSection({ headingId }: Props) {
   } = useJournalStorage();
   const [activeExercise, setActiveExercise] = useState<number | null>(null);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [practiceRecordsOpen, setPracticeRecordsOpen] = useState(true);
 
   useEffect(() => {
     if (state.mindfulnessSessions.length === 0) {
@@ -595,15 +615,15 @@ export function MindfulnessSection({ headingId }: Props) {
             10+ MINI MINDFULNESS EXERCISES
           </h3>
 
-          <p className="mt-6 text-sm leading-7 text-slate-600 sm:text-base">
+          <p className="mt-5 text-sm leading-7 text-bvm-muted sm:text-base">
             Try these quick exercises to practice being present. Each one takes just a few minutes and
             helps build focus, calm, and self-awareness.
           </p>
 
-          <div className="mt-6 grid grid-cols-5 gap-2 sm:gap-3">
+          <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-3">
             {exercises.map((exercise) => {
               const isActive = activeExercise === exercise.id;
-              const gridClass = isActive ? "col-span-5" : "col-span-1";
+              const gridClass = isActive ? "col-span-2 sm:col-span-5" : "col-span-1";
 
               return (
                 <div key={exercise.id} className={gridClass}>
@@ -622,21 +642,37 @@ export function MindfulnessSection({ headingId }: Props) {
         </section>
 
         <section className="space-y-4" aria-labelledby="mindfulness-reflection-heading">
-          <h3
-            id="mindfulness-reflection-heading"
-            className="font-display text-center text-[1.05rem] font-semibold tracking-[0.04em] text-bvm-title sm:text-[1.15rem]"
-          >
-            MY MINDFULNESS PRACTICE RECORDS
-          </h3>
+          <div className="flex items-center justify-between gap-3">
+            <h3 id="mindfulness-reflection-heading" className={JOURNAL_SUBHEADING_CLASS}>
+              MY MINDFULNESS PRACTICE RECORDS
+            </h3>
+            {state.mindfulnessSessions.length > 0 ? (
+              <button
+                type="button"
+                className={JOURNAL_COLLAPSE_BUTTON_CLASS}
+                aria-expanded={practiceRecordsOpen}
+                onClick={() => setPracticeRecordsOpen((open) => !open)}
+              >
+                {practiceRecordsOpen ? "Collapse" : "Expand"}
+              </button>
+            ) : null}
+          </div>
 
           {state.mindfulnessSessions.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200/80 bg-white/50 px-4 py-8">
-              <p className="text-center text-[0.9rem] leading-relaxed text-slate-600">
+            <div className={`${JOURNAL_RECORDS_SHELL_CLASS} px-4 py-8`}>
+              <p className="text-center text-[0.9rem] leading-relaxed text-bvm-muted">
                 Complete an exercise to start a mindfulness practice record.
               </p>
             </div>
+          ) : !practiceRecordsOpen ? (
+            <div className={JOURNAL_RECORDS_SHELL_CLASS}>
+              <p className="text-[0.85rem] text-bvm-muted">
+                {state.mindfulnessSessions.length} mindfulness practice record
+                {state.mindfulnessSessions.length === 1 ? "" : "s"} collapsed.
+              </p>
+            </div>
           ) : (
-            <div className="space-y-4">
+            <div className={`${JOURNAL_RECORDS_SHELL_CLASS} space-y-4`}>
               {state.mindfulnessSessions.map((session) => (
                 <MindfulnessSessionCard
                   key={session.id}

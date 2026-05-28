@@ -26,13 +26,13 @@ export function SegmentedControl({ value, onChange, ariaLabelledBy }: Props) {
             aria-checked={selected}
             onClick={() => onChange(n)}
             className={[
-              "min-h-[2.75rem] flex-1 border-r border-[rgba(30,60,90,0.14)] px-1 py-[0.45rem] text-[0.95rem] font-semibold text-[#1a1a1a] transition-[filter] last:border-r-0 hover:brightness-[1.03] active:brightness-[0.97]",
+              "min-h-[2.75rem] flex-1 border-r border-[rgba(30,60,90,0.14)] px-1 py-[0.45rem] text-[0.95rem] font-semibold transition-[filter,box-shadow,color] last:border-r-0 active:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bvm-action/25 [@media(hover:hover)]:hover:brightness-[1.03]",
               selected
-                ? "z-[1] outline outline-2 outline-offset-[-2px] outline-[rgba(0,0,0,0.32)]"
-                : "",
+                ? "z-[1] text-white shadow-[inset_0_0_0_2px_rgba(255,255,255,0.55),0_8px_18px_-14px_rgba(5,43,99,0.55)]"
+                : "text-[#1a1a1a]",
             ].join(" ")}
             style={{
-              backgroundColor: bg,
+              backgroundColor: selected ? "#052B63" : bg,
               backgroundImage: "none",
             }}
           >

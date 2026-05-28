@@ -1,9 +1,14 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
+  JOURNAL_COLLAPSE_BUTTON_CLASS,
   JOURNAL_GLASS_BORDER,
   JOURNAL_GLASS_PANEL_BASE,
+  JOURNAL_ICON_BUTTON_CLASS,
+  JOURNAL_PRIMARY_BUTTON_CLASS,
+  JOURNAL_RECORD_CARD_CLASS,
+  JOURNAL_RECORDS_SHELL_CLASS,
   RATING_SKILLS,
   RATING_TABLE_WIDTH_PCT,
   todayIsoDateLocal,
@@ -13,10 +18,10 @@ import { useJournalStorage } from "@/hooks/useJournalStorage";
 import { SegmentedControl } from "./SegmentedControl";
 
 const scaleStripLabelClass =
-  "text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-slate-500 sm:text-[0.6875rem]";
+  "text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-bvm-muted sm:text-[0.6875rem]";
 
 const skillNameClass =
-  "text-[0.8125rem] font-medium leading-[1.45] tracking-[0.01em] text-slate-800 sm:text-[0.875rem]";
+  "text-[0.8125rem] font-medium leading-[1.45] tracking-[0.01em] text-bvm-fg sm:text-[0.875rem]";
 
 function formatSnapshotTime(createdAt: string): string {
   const date = new Date(createdAt);
@@ -40,6 +45,7 @@ function getRatingIncrease(
 export function SelfAwarenessIntroAndSkills() {
   const { state, setRatings, saveSkillRatingSnapshot, removeSkillRatingSnapshot } =
     useJournalStorage();
+  const [ratingRecordsOpen, setRatingRecordsOpen] = useState(true);
 
   const setRating = useCallback(
     (sid: string, v: string | null) => {
@@ -62,26 +68,26 @@ export function SelfAwarenessIntroAndSkills() {
   }, [allRatingsComplete, saveSkillRatingSnapshot, savedToday]);
 
   return (
-    <div className="bvm-page mx-auto max-w-[40rem] px-5 pb-6 pt-10 text-slate-800 sm:max-w-[42rem] sm:px-8 sm:pb-8 sm:pt-12">
+    <div className="bvm-page mx-auto max-w-[40rem] px-5 pb-6 pt-8 text-bvm-fg sm:max-w-[42rem] sm:px-8 sm:pb-8 sm:pt-10">
       <section
         className={`mt-2 sm:mt-3 ${JOURNAL_GLASS_PANEL_BASE} ${JOURNAL_GLASS_BORDER.skillsRating}`}
         aria-labelledby="sa-rating-block-title"
       >
-        <div className="mb-7 border-b border-slate-200/35 pb-6 sm:mb-8 sm:pb-7">
+        <div className="mb-6 border-b border-bvm-border pb-5 sm:mb-7 sm:pb-6">
           <h2
             id="sa-rating-block-title"
             className="font-display text-center text-[1.125rem] font-semibold tracking-[0.05em] text-bvm-title sm:text-[1.25rem]"
           >
             <span className="text-balance">SKILLS RATING</span>
           </h2>
-          <p className="mx-auto mt-3 max-w-[26rem] text-center text-[0.8125rem] leading-relaxed text-slate-600 sm:text-[0.84375rem]">
+          <p className="mx-auto mt-3 max-w-[26rem] text-center text-[0.8125rem] leading-relaxed text-bvm-muted sm:text-[0.84375rem]">
             <span className="text-balance">
               Rate each area from 1 (very weak) to 5 (very strong).
             </span>
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-xl border-2 border-sky-300/40 bg-gradient-to-br from-white/95 via-white/75 to-bvm-tableHeader/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+        <div className="overflow-hidden rounded-2xl border border-bvm-border bg-gradient-to-br from-white via-white/90 to-bvm-tableHeader/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
           <div
             className="grid min-h-[4.5rem] items-stretch"
             style={{
@@ -89,17 +95,17 @@ export function SelfAwarenessIntroAndSkills() {
               gridTemplateColumns: "minmax(0, 0.9fr) minmax(0, 1.5fr)",
             }}
           >
-            <div className="flex items-center border-r border-slate-200/35 px-3 py-3.5 sm:px-4 break-words">
+            <div className="flex items-center break-words border-r border-bvm-border px-3 py-3.5 sm:px-4">
               <p className={`${scaleStripLabelClass} text-left leading-snug`}>
                 SELF-AWARENESS SKILLS RATING
               </p>
             </div>
             <div
-              className="min-w-0 bg-white/30"
+              className="min-w-0 bg-bvm-softBlue/45"
               style={{ width: `${RATING_TABLE_WIDTH_PCT}%`, maxWidth: "100%" }}
             >
               <table
-                className="h-full w-full border-collapse text-center text-[0.7rem] font-medium leading-tight text-slate-700 [&_td]:align-top"
+                className="h-full w-full border-collapse text-center text-[0.7rem] font-medium leading-tight text-bvm-muted [&_td]:align-top"
                 style={{ tableLayout: "fixed" }}
               >
                 <tbody>
@@ -115,10 +121,10 @@ export function SelfAwarenessIntroAndSkills() {
                     ).map((col) => (
                       <td key={col.n} className="w-[20%] align-top px-0.5 py-3 sm:px-1.5">
                         <div className="flex flex-col items-center">
-                          <span className="text-[0.75rem] font-semibold tabular-nums leading-none text-slate-900">
+                          <span className="text-[0.75rem] font-semibold tabular-nums leading-none text-bvm-fg">
                             {col.n}
                           </span>
-                          <div className="mt-1.5 flex min-h-[2.625rem] w-full flex-col items-center justify-center gap-0 text-[0.55rem] sm:text-[0.625rem] font-normal leading-[1.25] text-slate-600 sm:min-h-[2.75rem]">
+                          <div className="mt-1.5 flex min-h-[2.625rem] w-full flex-col items-center justify-center gap-0 text-[0.55rem] font-normal leading-[1.25] text-bvm-muted sm:min-h-[2.75rem] sm:text-[0.625rem]">
                             {col.lines.map((line) => (
                               /* add: break-words and tracking-tighter*/
                               <span key={`${col.n}-${line}`} className="block w-full break-words text-center tracking-tighter [overflow-wrap:anywhere] sm:tracking-normal">
@@ -136,7 +142,7 @@ export function SelfAwarenessIntroAndSkills() {
           </div>
         </div>
 
-        <div className="mt-3 divide-y divide-slate-200/35">
+        <div className="mt-3 divide-y divide-bvm-border/80">
           {RATING_SKILLS.map(({ id: sid, label }) => {
             const v = state.ratings[sid];
             const labelId = `sa-skill-${sid}`;
@@ -164,7 +170,7 @@ export function SelfAwarenessIntroAndSkills() {
           })}
         </div>
 
-        <div className="mt-5 border-t border-slate-200/35 pt-4">
+        <div className="mt-5 border-t border-bvm-border pt-4">
           <div
             className={
               hasSavedRatingRecords
@@ -173,41 +179,55 @@ export function SelfAwarenessIntroAndSkills() {
             }
           >
             {hasSavedRatingRecords ? (
-              <h3 className="text-[1rem] font-semibold text-slate-800">Saved rating records</h3>
+              <h3 className="text-[1rem] font-semibold text-bvm-fg">Saved rating records</h3>
             ) : null}
             <button
               type="button"
               onClick={handleSaveSnapshot}
               disabled={!allRatingsComplete}
-              className="shrink-0 rounded-xl bg-bvm-title px-5 py-3 text-[0.95rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40"
+              className={`shrink-0 ${JOURNAL_PRIMARY_BUTTON_CLASS}`}
             >
               Save current rating
             </button>
           </div>
 
           {hasSavedRatingRecords ? (
-            <div className="mt-5 space-y-3">
-              {state.skillRatingSnapshots.map((snapshot, index) => {
-                const previousSnapshot = state.skillRatingSnapshots[index + 1];
+            <div className={`mt-5 ${JOURNAL_RECORDS_SHELL_CLASS}`}>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[0.82rem] font-medium text-bvm-muted">
+                  {state.skillRatingSnapshots.length} saved rating record
+                  {state.skillRatingSnapshots.length === 1 ? "" : "s"}
+                </p>
+                <button
+                  type="button"
+                  className={JOURNAL_COLLAPSE_BUTTON_CLASS}
+                  aria-expanded={ratingRecordsOpen}
+                  onClick={() => setRatingRecordsOpen((open) => !open)}
+                >
+                  {ratingRecordsOpen ? "Collapse" : "Expand"}
+                </button>
+              </div>
 
-                return (
-                  <article
-                    key={snapshot.id}
-                    className="rounded-xl border border-slate-200/80 bg-white/50 px-4 py-4"
-                  >
+              {ratingRecordsOpen ? (
+                <div className="mt-4 space-y-3">
+                  {state.skillRatingSnapshots.map((snapshot, index) => {
+                    const previousSnapshot = state.skillRatingSnapshots[index + 1];
+
+                    return (
+                      <article key={snapshot.id} className={JOURNAL_RECORD_CARD_CLASS}>
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <h4 className="text-[0.95rem] font-semibold text-slate-800">
+                        <h4 className="text-[0.95rem] font-semibold text-bvm-fg">
                           {snapshot.date}
                         </h4>
-                        <p className="mt-0.5 text-[0.75rem] text-slate-500">
+                        <p className="mt-0.5 text-[0.75rem] text-bvm-muted">
                           {formatSnapshotTime(snapshot.createdAt)}
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeSkillRatingSnapshot(snapshot.id)}
-                        className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/60 hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+                        className={JOURNAL_ICON_BUTTON_CLASS}
                         aria-label={`Delete rating record for ${snapshot.date}`}
                       >
                         <svg
@@ -235,10 +255,10 @@ export function SelfAwarenessIntroAndSkills() {
                         return (
                           <div
                             key={`${snapshot.id}-${id}`}
-                            className="rounded-lg border border-slate-200/70 bg-white/60 px-3 py-2"
+                            className="rounded-xl border border-bvm-border bg-bvm-softBlue/40 px-3 py-2"
                           >
                             <p
-                              className="truncate text-[0.7rem] font-medium text-slate-500"
+                              className="truncate text-[0.7rem] font-medium text-bvm-muted"
                               title={label}
                             >
                               {label}
@@ -256,8 +276,14 @@ export function SelfAwarenessIntroAndSkills() {
                       })}
                     </div>
                   </article>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="mt-4 rounded-xl border border-bvm-border bg-white/70 px-4 py-3 text-[0.85rem] text-bvm-muted">
+                  Saved rating records are collapsed.
+                </p>
+              )}
             </div>
           ) : null}
         </div>

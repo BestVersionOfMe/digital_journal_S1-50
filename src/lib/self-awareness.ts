@@ -100,18 +100,36 @@ export const STORAGE_KEY = "bvm_journal_v1";
  * Frosted glass body — add one of `JOURNAL_GLASS_BORDER.*` for a tinted rim (“effect 1”).
  */
 export const JOURNAL_GLASS_PANEL_BASE =
-  "rounded-[1.25rem] border-2 bg-gradient-to-br from-white/60 via-white/45 to-sky-100/25 px-5 py-8 shadow-[0_1px_0_rgba(43,106,158,0.1),0_10px_40px_-8px_rgba(43,106,158,0.12),inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-md sm:rounded-[1.35rem] sm:px-8 sm:py-9";
+  "rounded-[1.35rem] border bg-white/[0.96] px-5 py-7 shadow-[0_28px_70px_-34px_rgba(5,43,99,0.42),0_2px_0_rgba(255,255,255,0.9),inset_0_1px_0_rgba(255,255,255,0.85)] ring-1 ring-white/80 backdrop-blur-md sm:rounded-[1.5rem] sm:px-8 sm:py-8";
 
 /** Distinct rim colors per journal block */
 export const JOURNAL_GLASS_BORDER = {
-  skillsRating: "border-sky-500/50",
-  seekingFeedback: "border-indigo-400/50",
-  givingFeedback: "border-rose-400/50",
-  selfReflection: "border-teal-500/50",
-  selfCompassion: "border-amber-500/50",
-  mindfulness: "border-emerald-500/50",
-  emotionalAwareness: "border-violet-500/50",
+  skillsRating: "border-bvm-borderStrong/70",
+  seekingFeedback: "border-bvm-borderStrong/70",
+  givingFeedback: "border-bvm-borderStrong/70",
+  selfReflection: "border-bvm-borderStrong/70",
+  selfCompassion: "border-bvm-borderStrong/70",
+  mindfulness: "border-bvm-borderStrong/70",
+  emotionalAwareness: "border-bvm-borderStrong/70",
 } as const;
+
+export const JOURNAL_SUBHEADING_CLASS =
+  "font-display text-center text-[1.05rem] font-semibold tracking-[0.04em] text-bvm-title sm:text-[1.15rem]";
+
+export const JOURNAL_RECORDS_SHELL_CLASS =
+  "rounded-2xl border border-bvm-border bg-bvm-softBlue/35 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]";
+
+export const JOURNAL_RECORD_CARD_CLASS =
+  "rounded-2xl border border-bvm-border bg-white/80 px-4 py-4 shadow-[0_12px_30px_-24px_rgba(5,43,99,0.24),inset_0_1px_0_rgba(255,255,255,0.8)]";
+
+export const JOURNAL_PRIMARY_BUTTON_CLASS =
+  "rounded-xl bg-bvm-title px-5 py-3 text-[0.95rem] font-semibold text-white shadow-[0_8px_20px_rgba(5,43,99,0.22)] transition-all hover:-translate-y-0.5 hover:bg-bvm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bvm-action/25 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0";
+
+export const JOURNAL_COLLAPSE_BUTTON_CLASS =
+  "shrink-0 rounded-full border border-bvm-borderStrong bg-white/90 px-3 py-1.5 text-[0.72rem] font-semibold text-bvm-title shadow-sm transition-colors hover:bg-bvm-title hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bvm-action/25";
+
+export const JOURNAL_ICON_BUTTON_CLASS =
+  "rounded-lg p-2 text-bvm-muted transition-colors hover:bg-bvm-softBlue hover:text-bvm-title focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bvm-action/20";
 
 export type SelfReflectionScale = "numbers" | "words" | "emojis";
 
@@ -440,5 +458,114 @@ export function exportMarkdown(state: JournalState): string {
   lines.push("");
   lines.push(state.givingFeedbackText.trim() || "_(empty)_");
   lines.push("");
+  return lines.join("\n");
+}
+
+export function buildSelfAwarenessReport(state: JournalState): string {
+  const lines: string[] = ["# Self-Awareness Page Report", ""];
+  const empty = "_(empty)_";
+  const notSelected = "_(not selected)_";
+  const formatDuration = (seconds: number): string => {
+    const safeSeconds = Math.max(0, Math.round(seconds));
+    const mins = Math.floor(safeSeconds / 60);
+    const secs = String(safeSeconds % 60).padStart(2, "0");
+    return `${mins}:${secs}`;
+  };
+  const reflectionRating = (measure: SelfReflectionMeasure): string => {
+    if (measure.scale === "numbers") {
+      return measure.numberValue == null ? notSelected : String(measure.numberValue);
+    }
+    if (measure.scale === "words") {
+      const palette =
+        measure.wordTokens.length > 0
+          ? measure.wordTokens
+          : measure.wordChoice != null
+            ? [legacyWordChoiceToLabel(measure.wordChoice)]
+            : [];
+      return measure.wordRatingIndex != null && palette[measure.wordRatingIndex] != null
+        ? palette[measure.wordRatingIndex]!
+        : notSelected;
+    }
+    return measure.emojiIndex == null
+      ? notSelected
+      : ["Low", "Okay", "Good", "Great"][measure.emojiIndex] ?? notSelected;
+  };
+
+  lines.push("## Skills rating");
+  for (const { id, label } of RATING_SKILLS) {
+    lines.push(`- ${label}: ${state.ratings[id] ?? notSelected}`);
+  }
+
+  lines.push("");
+  lines.push("## Saved skills rating records");
+  if (state.skillRatingSnapshots.length === 0) {
+    lines.push(empty);
+  } else {
+    for (const snapshot of state.skillRatingSnapshots) {
+      lines.push(`- ${snapshot.date} (${snapshot.createdAt})`);
+      for (const { id, label } of RATING_SKILLS) {
+        lines.push(`  - ${label}: ${snapshot.ratings[id] ?? notSelected}`);
+      }
+    }
+  }
+
+  lines.push("");
+  lines.push("## Self compassion");
+  for (const { id, prompt } of COMPASSION_PROMPTS) {
+    lines.push(`- ${prompt}: ${state.compassion[id]?.trim() || empty}`);
+  }
+
+  lines.push("");
+  lines.push("## Self reflection setup");
+  lines.push(`- Area draft: ${state.reflectionArea.trim() || empty}`);
+  lines.push(`- Scoring scale: ${state.reflectionScale}`);
+  lines.push(`- Number preview: ${state.reflectionNumberValue}`);
+  lines.push(`- Word preview: ${state.reflectionWordTokens.join(", ") || empty}`);
+
+  lines.push("");
+  lines.push("## Self reflection journal records");
+  if (state.reflectionWeeks.length === 0) {
+    lines.push(empty);
+  } else {
+    for (const week of state.reflectionWeeks) {
+      lines.push(`- ${week.label}${week.submitted ? " (submitted)" : ""}: ${week.reflectionDate}`);
+      if (week.measures.length === 0) {
+        lines.push(`  - ${empty}`);
+      }
+      for (const measure of week.measures) {
+        lines.push(
+          `  - ${measure.area.trim() || empty}: ${measure.scale}, rating ${reflectionRating(measure)}`,
+        );
+      }
+    }
+  }
+
+  lines.push("");
+  lines.push("## Mindfulness practice records");
+  if (state.mindfulnessSessions.length === 0) {
+    lines.push(empty);
+  } else {
+    for (const session of state.mindfulnessSessions) {
+      const totalSeconds = session.practices.reduce(
+        (total, practice) => total + practice.durationSeconds,
+        0,
+      );
+      lines.push(
+        `- ${session.label}${session.submitted ? " (submitted)" : ""}: ${session.practiceDate}`,
+      );
+      lines.push(`  - Total practice time: ${formatDuration(totalSeconds)}`);
+      for (const practice of session.practices) {
+        lines.push(`  - ${practice.exerciseTitle}: ${formatDuration(practice.durationSeconds)}`);
+      }
+      lines.push(`  - Feel: ${session.feelText.trim() || empty}`);
+    }
+  }
+
+  lines.push("");
+  lines.push("## Feedback");
+  lines.push(`- Seeking feedback: ${state.seekingFeedbackText.trim() || empty}`);
+  lines.push(`- Giving feedback: ${state.givingFeedbackText.trim() || empty}`);
+  lines.push("");
+
   return lines.join("\n");
 }
