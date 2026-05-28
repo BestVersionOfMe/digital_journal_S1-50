@@ -739,6 +739,12 @@ export function SelfReflectionSection({ headingId }: Props) {
               </button>
             ) : null}
           </div>
+          {state.reflectionWeeks.length > 0 ? (
+            <p className="text-[0.82rem] font-medium text-bvm-muted">
+              {state.reflectionWeeks.length} saved self reflection week
+              {state.reflectionWeeks.length === 1 ? "" : "s"}
+            </p>
+          ) : null}
 
         {state.reflectionWeeks.length === 0 ? (
           <div className={`${JOURNAL_RECORDS_SHELL_CLASS} px-3 py-10 sm:px-5`}>
@@ -747,12 +753,7 @@ export function SelfReflectionSection({ headingId }: Props) {
             </p>
           </div>
         ) : !reflectionRecordsOpen ? (
-          <div className={JOURNAL_RECORDS_SHELL_CLASS}>
-            <p className="text-[0.85rem] text-bvm-muted">
-              {state.reflectionWeeks.length} self reflection week
-              {state.reflectionWeeks.length === 1 ? "" : "s"} collapsed.
-            </p>
-          </div>
+          null
         ) : (
           <div className="space-y-5">
             {state.reflectionWeeks.map((week) => {

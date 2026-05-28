@@ -657,6 +657,12 @@ export function MindfulnessSection({ headingId }: Props) {
               </button>
             ) : null}
           </div>
+          {state.mindfulnessSessions.length > 0 ? (
+            <p className="text-[0.82rem] font-medium text-bvm-muted">
+              {state.mindfulnessSessions.length} saved mindfulness practice record
+              {state.mindfulnessSessions.length === 1 ? "" : "s"}
+            </p>
+          ) : null}
 
           {state.mindfulnessSessions.length === 0 ? (
             <div className={`${JOURNAL_RECORDS_SHELL_CLASS} px-4 py-8`}>
@@ -665,12 +671,7 @@ export function MindfulnessSection({ headingId }: Props) {
               </p>
             </div>
           ) : !practiceRecordsOpen ? (
-            <div className={JOURNAL_RECORDS_SHELL_CLASS}>
-              <p className="text-[0.85rem] text-bvm-muted">
-                {state.mindfulnessSessions.length} mindfulness practice record
-                {state.mindfulnessSessions.length === 1 ? "" : "s"} collapsed.
-              </p>
-            </div>
+            null
           ) : (
             <div className="space-y-4">
               {state.mindfulnessSessions.map((session) => (

@@ -169,36 +169,23 @@ export function SelfAwarenessIntroAndSkills() {
           })}
         </div>
 
-        <div className="mt-5 border-t border-bvm-border pt-4">
-          <div
-            className={
-              hasSavedRatingRecords
-                ? "flex items-start justify-between gap-3"
-                : "flex justify-center"
-            }
+        <div className="mt-5 flex justify-center">
+          <button
+            type="button"
+            onClick={handleSaveSnapshot}
+            disabled={!allRatingsComplete}
+            className={`shrink-0 ${JOURNAL_PRIMARY_BUTTON_CLASS}`}
           >
-            {hasSavedRatingRecords ? (
+            Save current rating
+          </button>
+        </div>
+
+        {hasSavedRatingRecords ? (
+          <div className="mt-5 border-t border-bvm-border pt-4">
+            <div className="flex items-center justify-between gap-3">
               <h3 className="font-display text-[1.08rem] font-semibold tracking-[0.025em] text-bvm-title">
                 Saved rating records
               </h3>
-            ) : null}
-            <button
-              type="button"
-              onClick={handleSaveSnapshot}
-              disabled={!allRatingsComplete}
-              className={`shrink-0 ${JOURNAL_PRIMARY_BUTTON_CLASS}`}
-            >
-              Save current rating
-            </button>
-          </div>
-
-          {hasSavedRatingRecords ? (
-            <div className="mt-5">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[0.82rem] font-medium text-bvm-muted">
-                  {state.skillRatingSnapshots.length} saved rating record
-                  {state.skillRatingSnapshots.length === 1 ? "" : "s"}
-                </p>
                 <button
                   type="button"
                   className={JOURNAL_COLLAPSE_BUTTON_CLASS}
@@ -207,7 +194,11 @@ export function SelfAwarenessIntroAndSkills() {
                 >
                   {ratingRecordsOpen ? "Collapse" : "Expand"}
                 </button>
-              </div>
+            </div>
+            <p className="mt-2 text-[0.82rem] font-medium text-bvm-muted">
+              {state.skillRatingSnapshots.length} saved rating record
+              {state.skillRatingSnapshots.length === 1 ? "" : "s"}
+            </p>
 
               {ratingRecordsOpen ? (
                 <div className="mt-4 space-y-3">
@@ -281,9 +272,8 @@ export function SelfAwarenessIntroAndSkills() {
                   })}
                 </div>
               ) : null}
-            </div>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </section>
     </div>
   );
