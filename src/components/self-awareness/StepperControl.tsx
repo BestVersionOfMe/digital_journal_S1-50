@@ -31,7 +31,7 @@ export function StepperControl({ value, onChange, ariaLabelledBy }: Props) {
 
   return (
     <div
-      className="flex w-full min-w-0 items-stretch overflow-hidden rounded-xl border border-[rgba(30,60,90,0.16)] bg-gradient-to-r from-[#f6fafd] via-white to-[#f6fafd] shadow-[0_1px_3px_rgba(43,106,158,0.08)]"
+      className="flex w-full min-w-0 items-stretch overflow-hidden rounded-xl border border-bvm-softBorder bg-white shadow-[0_4px_14px_rgba(5,43,99,0.06)]"
       role="group"
       aria-labelledby={ariaLabelledBy}
     >
@@ -40,7 +40,7 @@ export function StepperControl({ value, onChange, ariaLabelledBy }: Props) {
         onClick={dec}
         disabled={!canDecrease}
         aria-label="Decrease rating"
-        className="flex min-h-[2.75rem] min-w-[3rem] shrink-0 items-center justify-center border-r border-[rgba(30,60,90,0.12)] bg-[#eef5fb] text-xl font-semibold text-bvm-title transition-colors hover:bg-[#dbeaf7] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-[#eef5fb]"
+        className="flex min-h-[2.75rem] min-w-[3rem] shrink-0 items-center justify-center border-r border-bvm-softBorder bg-bvm-pageTop text-xl font-semibold text-bvm-title transition-colors hover:bg-[#EAF4FF] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-bvm-pageTop"
       >
         −
       </button>
@@ -60,7 +60,7 @@ export function StepperControl({ value, onChange, ariaLabelledBy }: Props) {
         onClick={inc}
         disabled={!canIncrease}
         aria-label="Increase rating"
-        className="flex min-h-[2.75rem] min-w-[3rem] shrink-0 items-center justify-center border-l border-[rgba(30,60,90,0.12)] bg-[#eef5fb] text-xl font-semibold text-bvm-title transition-colors hover:bg-[#dbeaf7] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-[#eef5fb]"
+        className="flex min-h-[2.75rem] min-w-[3rem] shrink-0 items-center justify-center border-l border-bvm-softBorder bg-bvm-pageTop text-xl font-semibold text-bvm-title transition-colors hover:bg-[#EAF4FF] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-bvm-pageTop"
       >
         +
       </button>
