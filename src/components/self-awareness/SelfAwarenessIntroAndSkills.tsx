@@ -8,7 +8,6 @@ import {
   JOURNAL_ICON_BUTTON_CLASS,
   JOURNAL_PRIMARY_BUTTON_CLASS,
   JOURNAL_RECORD_CARD_CLASS,
-  JOURNAL_RECORDS_SHELL_CLASS,
   RATING_SKILLS,
   RATING_TABLE_WIDTH_PCT,
   todayIsoDateLocal,
@@ -179,7 +178,9 @@ export function SelfAwarenessIntroAndSkills() {
             }
           >
             {hasSavedRatingRecords ? (
-              <h3 className="text-[1rem] font-semibold text-bvm-fg">Saved rating records</h3>
+              <h3 className="font-display text-[1.08rem] font-semibold tracking-[0.025em] text-bvm-title">
+                Saved rating records
+              </h3>
             ) : null}
             <button
               type="button"
@@ -279,11 +280,7 @@ export function SelfAwarenessIntroAndSkills() {
                     );
                   })}
                 </div>
-              ) : (
-                <p className={`mt-4 ${JOURNAL_RECORDS_SHELL_CLASS} text-[0.85rem] text-bvm-muted`}>
-                  Saved rating records are collapsed.
-                </p>
-              )}
+              ) : null}
             </div>
           ) : null}
         </div>
