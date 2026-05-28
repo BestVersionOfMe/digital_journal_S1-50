@@ -5,8 +5,14 @@ import { useJournalStorage } from "@/hooks/useJournalStorage";
 import {
   isMeasureRatingComplete,
   isPresetWordLabel,
+  JOURNAL_COLLAPSE_BUTTON_CLASS,
   JOURNAL_GLASS_BORDER,
   JOURNAL_GLASS_PANEL_BASE,
+  JOURNAL_ICON_BUTTON_CLASS,
+  JOURNAL_PRIMARY_BUTTON_CLASS,
+  JOURNAL_RECORD_CARD_CLASS,
+  JOURNAL_RECORDS_SHELL_CLASS,
+  JOURNAL_SUBHEADING_CLASS,
   legacyWordChoiceToLabel,
   MAX_REFLECTION_WORDS,
   newReflectionMeasureId,
@@ -35,9 +41,9 @@ const EMOJI_OPTIONS: { label: string }[] = [
 ];
 
 const ROW_TRACK_BG = [
-  "bg-sky-200/85",
-  "bg-purple-200/80",
-  "bg-indigo-300/75",
+  "bg-bvm-softBlue",
+  "bg-bvm-softBlue/80",
+  "bg-bvm-borderStrong/55",
 ] as const;
 
 const moodStroke = "#052B63";
@@ -119,32 +125,59 @@ function RatingSlider({
   dense?: boolean;
   disabled?: boolean;
 }) {
+  const safeValue = Math.min(max, Math.max(min, value));
+  const progress = ((safeValue - min) / (max - min)) * 100;
+  const ticks = Array.from({ length: max - min + 1 }, (_, index) => min + index);
+
   return (
-    <div className={dense ? "pt-0.5" : "pt-2"}>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={1}
-        value={value}
-        onChange={(e) => {
-          if (!disabled) {
-            onChange(Number(e.target.value));
-          }
-        }}
-        disabled={disabled}
-        className={`bvm-slider w-full appearance-none rounded-full bg-white/50 accent-bvm-title ${
-          dense ? "h-1.5" : "h-2"
-        } ${disabled ? "cursor-default opacity-90" : "cursor-pointer"}`}
-        aria-label="Rating slider"
-      />
-      {!dense ? (
+    <div className={dense ? "pt-1" : "pt-2"}>
+      <div className="relative h-8">
+        <div className="pointer-events-none absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-[#dce8fb]">
+          <div
+            className="h-full rounded-full bg-[#1f5fae]"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={1}
+          value={safeValue}
+          onChange={(e) => {
+            if (!disabled) {
+              onChange(Number(e.target.value));
+            }
+          }}
+          disabled={disabled}
+          className={`bvm-reflection-slider absolute inset-x-0 top-0 h-8 w-full appearance-none ${
+            disabled ? "cursor-default opacity-90" : "cursor-pointer"
+          }`}
+          aria-label="Rating slider"
+        />
+      </div>
+
+      {dense ? (
+        <>
+          <div className="mt-1 flex justify-between px-0.5 text-[0.64rem] font-semibold tabular-nums text-[#516184] sm:text-[0.7rem]">
+            {ticks.map((tick) => (
+              <span
+                key={tick}
+                className={tick === safeValue ? "text-[#1f5fae]" : undefined}
+              >
+                {tick}
+              </span>
+            ))}
+          </div>
+          <div className="mt-1 text-center text-[0.68rem] font-medium text-[#5d6f86]">
+            Drag to set
+          </div>
+        </>
+      ) : (
         <div className="mt-1 flex justify-between px-0.5 text-[0.65rem] font-medium text-slate-600">
           <span>{min}</span>
           <span>{max}</span>
         </div>
-      ) : (
-        <div className="mt-0.5 text-center text-[0.65rem] font-semibold text-bvm-title">{value}</div>
       )}
     </div>
   );
@@ -235,8 +268,8 @@ function ReflectionWordsEditor({
       compact ? "px-2 py-1 text-[0.62rem] sm:text-[0.65rem]" : "px-3 py-2 text-[0.78rem] sm:text-[0.85rem]",
       "rounded-full border font-medium leading-tight transition-colors",
       selected
-        ? "border-bvm-title bg-white text-bvm-title shadow-sm ring-1 ring-bvm-title/20"
-        : "border-[#c9c4e8] bg-white/90 text-[#5a4d8a] hover:bg-white",
+        ? "border-[#1f5fae] bg-[#eaf4ff] text-[#052b63] shadow-[0_6px_14px_-12px_rgba(31,95,174,0.35)]"
+        : "border-[#b9d3ef] bg-white text-[#052b63] hover:border-[#1f5fae] hover:bg-[#f7fbff]",
     ].join(" ");
 
   return (
@@ -325,13 +358,13 @@ function ReflectionWordsEditor({
             }
           }}
           placeholder="Or type custom word..."
-          className="min-w-0 h-10 flex-1 rounded-xl border border-slate-200/80 bg-white/80 px-3 text-[0.78rem] text-slate-800 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.82rem]"
+          className="h-10 min-w-0 flex-1 rounded-xl border border-bvm-border bg-white px-3 text-[0.78rem] text-bvm-fg placeholder:text-bvm-muted/70 focus:border-bvm-action focus:outline-none focus:ring-2 focus:ring-bvm-action/15 sm:text-[0.82rem]"
         />
         <button
           type="button"
           onClick={addCustom}
           disabled={addDisabled}
-          className="h-10 shrink-0 rounded-xl bg-bvm-title px-3.5 text-[0.78rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40 sm:text-[0.82rem]"
+          className="h-10 shrink-0 rounded-xl bg-bvm-title px-3.5 text-[0.78rem] font-semibold text-white shadow-[0_8px_18px_rgba(5,43,99,0.18)] transition-colors hover:bg-bvm-accent disabled:cursor-not-allowed disabled:opacity-40 sm:text-[0.82rem]"
         >
           Add
         </button>
@@ -373,9 +406,11 @@ function JournalRatingCell({
           ? palette[m.wordRatingIndex]
           : "—";
       return (
-        <p className="py-1 text-center text-[0.62rem] font-medium leading-tight text-slate-800 sm:text-[0.65rem]">
-          {label}
-        </p>
+        <div className="flex w-full justify-center py-1">
+          <span className="inline-flex min-h-[2.25rem] max-w-full items-center justify-center rounded-full border border-[#1f5fae] bg-[#eaf4ff] px-3 py-1.5 text-center text-[0.62rem] font-semibold leading-tight text-[#052b63] shadow-sm sm:px-4 sm:text-[0.72rem]">
+            {label}
+          </span>
+        </div>
       );
     }
     if (m.emojiIndex == null) {
@@ -395,22 +430,13 @@ function JournalRatingCell({
   if (m.scale === "numbers") {
     if (m.numberValue == null) {
       return (
-        <div className="flex h-full min-h-[44px] flex-col justify-center px-0.5">
-          <input
-            type="range"
-            min={1}
-            max={10}
-            step={1}
-            className="bvm-slider h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/50 accent-bvm-title"
-            aria-label="Set rating 1 to 10"
-            onChange={(e) => onPatch({ numberValue: Number(e.target.value) })}
-          />
-          <p className="mt-0.5 text-center text-[0.58rem] text-slate-400">Drag to set</p>
+        <div className="flex h-full min-h-[76px] flex-col justify-center px-0.5">
+          <RatingSlider dense value={1} onChange={(n) => onPatch({ numberValue: n })} />
         </div>
       );
     }
     return (
-      <div className="flex h-full min-h-[40px] flex-col justify-center">
+      <div className="flex h-full min-h-[76px] flex-col justify-center">
         <RatingSlider
           dense
           value={m.numberValue}
@@ -433,7 +459,7 @@ function JournalRatingCell({
       );
     }
     return (
-      <div className="grid w-full grid-cols-2 gap-1 sm:grid-cols-4">
+      <div className="flex w-full flex-wrap justify-center gap-2 sm:gap-3">
         {palette.map((word, i) => {
           const selected = m.wordRatingIndex === i;
           return (
@@ -443,16 +469,14 @@ function JournalRatingCell({
               title={word}
               onClick={() => onPatch({ wordRatingIndex: i })}
               className={[
-                "flex min-h-[2rem] min-w-0 flex-col items-center justify-center rounded-lg px-1 py-1 text-center",
+                "flex min-h-[2.25rem] min-w-0 items-center justify-center rounded-full border px-3 py-1.5 text-center shadow-sm transition-colors sm:px-4",
                 selected
-                  ? "bg-white/90 ring-1 ring-bvm-title/30"
-                  : "opacity-85 hover:opacity-100",
+                  ? "border-[#1f5fae] bg-[#eaf4ff] text-[#052b63] ring-1 ring-[#1f5fae]/15"
+                  : "border-[#b9d3ef] bg-white text-[#052b63] hover:border-[#1f5fae] hover:bg-[#f7fbff]",
               ].join(" ")}
             >
               <span
-                className={`max-w-full whitespace-normal text-center text-[0.55rem] font-medium leading-tight sm:text-[0.58rem] ${
-                  selected ? "text-bvm-title" : "text-slate-600"
-                }`}
+                className="max-w-full whitespace-normal text-center text-[0.62rem] font-semibold leading-tight sm:text-[0.72rem]"
               >
                 {word}
               </span>
@@ -508,6 +532,7 @@ export function SelfReflectionSection({ headingId }: Props) {
   const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
   const [celebrationWeekId, setCelebrationWeekId] = useState<string | null>(null);
   const [hasShownFirstCelebration, setHasShownFirstCelebration] = useState(false);
+  const [reflectionRecordsOpen, setReflectionRecordsOpen] = useState(true);
   const [reflectionAreaDraft, setReflectionAreaDraft] = useState(state.reflectionArea);
   const trimmedReflectionArea = state.reflectionArea.trim();
   const trimmedReflectionAreaDraft = reflectionAreaDraft.trim();
@@ -571,17 +596,17 @@ export function SelfReflectionSection({ headingId }: Props) {
   const scale = state.reflectionScale;
 
   return (
-    <div className="mx-auto max-w-[40rem] space-y-8 px-5 pb-16 pt-8 sm:max-w-[42rem] sm:px-8 sm:pb-20 sm:pt-10">
+    <div className="mx-auto max-w-[40rem] px-5 pb-16 pt-8 sm:max-w-[42rem] sm:px-8 sm:pb-20 sm:pt-10">
       <section
         className={`${JOURNAL_GLASS_PANEL_BASE} ${JOURNAL_GLASS_BORDER.selfReflection} sm:py-10`}
         aria-labelledby={headingId}
       >
         <div className="space-y-6">
           <div>
-            <h3 className="font-display text-[1rem] font-medium text-bvm-title sm:text-[1.05rem]">
-              Choose what to measure
+            <h3 className="font-display text-[1rem] font-semibold text-bvm-title sm:text-[1.05rem]">
+              Choose what to reflect on
             </h3>
-            <label className="mt-4 block text-[0.8125rem] font-medium text-slate-800">Area</label>
+            <label className="mt-4 block text-[0.8125rem] font-medium text-bvm-fg">Area</label>
             <input
               type="text"
               value={reflectionAreaDraft}
@@ -591,12 +616,12 @@ export function SelfReflectionSection({ headingId }: Props) {
                 setReflectionArea(next);
               }}
               placeholder="e.g., Sleep quality"
-              className="mt-2 w-full rounded-xl border border-slate-200/70 bg-white/70 px-4 py-3 text-[0.95rem] text-slate-700 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
+              className="mt-2 w-full rounded-xl border border-bvm-border bg-white px-4 py-3 text-[0.95rem] text-bvm-fg placeholder:text-bvm-muted/70 focus:border-bvm-action focus:outline-none focus:ring-2 focus:ring-bvm-action/20"
             />
           </div>
 
           <div>
-            <h3 className="font-display text-[1rem] font-medium text-bvm-title sm:text-[1.05rem]">
+            <h3 className="font-display text-[1rem] font-semibold text-bvm-title sm:text-[1.05rem]">
               Choose your scoring scale
             </h3>
             <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
@@ -608,17 +633,17 @@ export function SelfReflectionSection({ headingId }: Props) {
                     type="button"
                     onClick={() => setReflectionScale(t.id)}
                     className={[
-                      "rounded-2xl border px-2 py-3 text-center transition-colors sm:py-3.5",
+                      "rounded-full border px-2 py-3 text-center transition-all sm:py-3.5",
                       selected
-                        ? "border-bvm-title bg-white/90 shadow-sm ring-1 ring-bvm-title/25"
-                        : "border-slate-200/80 bg-white/50 hover:bg-white/75",
+                        ? "border-bvm-title bg-bvm-title text-white shadow-[0_8px_18px_-12px_rgba(5,43,99,0.45)]"
+                        : "border-bvm-border bg-white/80 text-bvm-title hover:border-bvm-borderStrong hover:bg-white",
                     ].join(" ")}
                     aria-pressed={selected}
                   >
-                    <div className="text-[0.9rem] font-semibold text-slate-900 sm:text-[0.95rem]">
+                    <div className="text-[0.9rem] font-semibold sm:text-[0.95rem]">
                       {t.label}
                     </div>
-                    <div className="mt-1 text-[0.65rem] font-medium text-slate-500 sm:text-[0.7rem]">
+                    <div className={`mt-1 text-[0.65rem] font-medium sm:text-[0.7rem] ${selected ? "text-white/78" : "text-bvm-muted"}`}>
                       {t.hint}
                     </div>
                   </button>
@@ -627,13 +652,13 @@ export function SelfReflectionSection({ headingId }: Props) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-bvm-softBorder bg-bvm-pageTop/70 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
-            <div className="text-[0.8125rem] font-medium text-bvm-muted">Preview:</div>
+          <div className="rounded-2xl border border-bvm-border bg-bvm-softBlue/35 px-4 py-4">
+            <div className="text-[0.8125rem] font-medium text-bvm-muted">Rating options</div>
 
             {scale === "numbers" && (
               <div className="mt-3">
                 <div className="flex items-baseline justify-between">
-                  <div className="text-[0.98rem] font-semibold text-slate-900">Rating</div>
+                  <div className="text-[0.98rem] font-semibold text-bvm-fg">Rating</div>
                   <div className="text-[0.98rem] font-semibold text-bvm-title">
                     {state.reflectionNumberValue}
                   </div>
@@ -689,27 +714,46 @@ export function SelfReflectionSection({ headingId }: Props) {
             type="button"
             onClick={createJournal}
             disabled={!canCreateReflectionMeasure}
-            className="w-full rounded-2xl border border-bvm-title/40 bg-bvm-title/90 py-3.5 text-[0.95rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-bvm-title/90"
+            className={`w-full border border-bvm-title/40 py-3.5 disabled:hover:bg-bvm-title ${JOURNAL_PRIMARY_BUTTON_CLASS}`}
           >
             Create
           </button>
         </div>
-      </section>
 
-      <section className="space-y-4" aria-labelledby="self-reflection-journal-heading">
-        <h3
-          id="self-reflection-journal-heading"
-          className="font-display text-center text-[1.05rem] font-semibold tracking-[0.04em] text-bvm-title sm:text-[1.15rem]"
+        <section
+          className="mt-8 space-y-4 border-t border-bvm-border pt-6"
+          aria-labelledby="self-reflection-journal-heading"
         >
-          MY SELF REFLECTION JOURNAL
-        </h3>
+          <div className="flex items-center justify-between gap-3">
+            <h3 id="self-reflection-journal-heading" className={JOURNAL_SUBHEADING_CLASS}>
+              MY SELF REFLECTION JOURNAL
+            </h3>
+            {state.reflectionWeeks.length > 0 ? (
+              <button
+                type="button"
+                className={JOURNAL_COLLAPSE_BUTTON_CLASS}
+                aria-expanded={reflectionRecordsOpen}
+                onClick={() => setReflectionRecordsOpen((open) => !open)}
+              >
+                {reflectionRecordsOpen ? "Collapse" : "Expand"}
+              </button>
+            ) : null}
+          </div>
+          {state.reflectionWeeks.length > 0 ? (
+            <p className="text-[0.82rem] font-medium text-bvm-muted">
+              {state.reflectionWeeks.length} saved self reflection week
+              {state.reflectionWeeks.length === 1 ? "" : "s"}
+            </p>
+          ) : null}
 
         {state.reflectionWeeks.length === 0 ? (
-          <div className="rounded-[1.25rem] border border-bvm-softBorder bg-bvm-pageTop px-3 py-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] sm:px-5">
+          <div className={`${JOURNAL_RECORDS_SHELL_CLASS} px-3 py-10 sm:px-5`}>
             <p className="text-center text-[0.9rem] leading-relaxed text-bvm-muted">
-              Please create your self reflection measure.
+              Add a reflection area to start your journal.
             </p>
           </div>
+        ) : !reflectionRecordsOpen ? (
+          null
         ) : (
           <div className="space-y-5">
             {state.reflectionWeeks.map((week) => {
@@ -726,26 +770,26 @@ export function SelfReflectionSection({ headingId }: Props) {
                 <div
                   key={week.id}
                   className={[
-                    "relative rounded-[1.25rem] border border-bvm-softBorder bg-white/[0.92] px-3 py-4 pr-11 shadow-[0_14px_34px_rgba(5,43,99,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] sm:px-5 sm:py-5 sm:pr-14",
-                    week.submitted ? "ring-1 ring-bvm-activeBorder/70" : "",
+                    `relative px-3 py-4 pr-11 sm:px-5 sm:py-5 sm:pr-14 ${JOURNAL_RECORD_CARD_CLASS}`,
+                    week.submitted ? "ring-1 ring-bvm-borderStrong/55" : "",
                   ].join(" ")}
                 >
                   {showCelebration ? (
-                    <div className="mb-4 overflow-hidden rounded-2xl border border-bvm-softBorder bg-gradient-to-br from-bvm-pageTop via-white to-[#EAF4FF] px-4 py-4 shadow-[0_8px_24px_-16px_rgba(5,43,99,0.42)]">
+                    <div className="mb-4 overflow-hidden rounded-2xl border border-teal-200/70 bg-gradient-to-br from-sky-50 via-white to-teal-50 px-4 py-4 shadow-[0_8px_24px_-16px_rgba(43,106,158,0.55)]">
                       <div className="flex items-start gap-3">
                         <CelebrationBurst />
                         <div className="min-w-0 flex-1 pt-0.5">
                           <p className="font-display text-[1rem] font-semibold text-bvm-title sm:text-[1.05rem]">
                             Congratulations!
                           </p>
-                          <p className="mt-1 text-[0.86rem] leading-relaxed text-bvm-muted sm:text-[0.92rem]">
+                          <p className="mt-1 text-[0.86rem] leading-relaxed text-slate-700 sm:text-[0.92rem]">
                             You just submitted your first self-reflection journal entry.
                           </p>
                         </div>
                         <button
                           type="button"
                           onClick={() => setCelebrationWeekId(null)}
-                          className="shrink-0 rounded-full border border-bvm-softBorder bg-white/90 px-3 py-1.5 text-[0.72rem] font-semibold text-bvm-muted transition-colors hover:border-bvm-title hover:bg-white hover:text-bvm-title"
+                          className={JOURNAL_COLLAPSE_BUTTON_CLASS}
                           aria-label="Dismiss congratulations message"
                         >
                           Close
@@ -757,7 +801,7 @@ export function SelfReflectionSection({ headingId }: Props) {
                   <button
                     type="button"
                     onClick={() => removeReflectionWeek(week.id)}
-                    className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-bvm-muted/70 transition-colors hover:bg-red-50 hover:text-red-600 sm:right-3 sm:top-3"
+                    className={`${JOURNAL_ICON_BUTTON_CLASS} absolute right-2 top-2 z-10 p-1.5 hover:bg-red-50 hover:text-red-600 sm:right-3 sm:top-3`}
                     aria-label={`Delete ${week.label}`}
                   >
                     <IconTrash />
@@ -765,7 +809,7 @@ export function SelfReflectionSection({ headingId }: Props) {
 
                   <div className="mb-3 space-y-2 sm:mb-4">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="font-display text-[0.95rem] font-bold text-bvm-text sm:text-base">
+                      <p className="font-display text-[0.95rem] font-bold text-slate-900 sm:text-base">
                         {week.label}
                       </p>
 
@@ -773,7 +817,7 @@ export function SelfReflectionSection({ headingId }: Props) {
                         <button
                           type="button"
                           onClick={() => toggleEditWeek(week.id)}
-                          className="shrink-0 rounded-full border border-bvm-title/45 bg-white/90 px-3 py-1.5 text-[0.72rem] font-semibold text-bvm-title shadow-sm transition-colors hover:bg-bvm-title hover:text-white"
+                          className={JOURNAL_COLLAPSE_BUTTON_CLASS}
                         >
                           {isEditing ? "Done Editing" : "Edit Reflection"}
                         </button>
@@ -781,7 +825,7 @@ export function SelfReflectionSection({ headingId }: Props) {
                         <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
                           <div className="flex min-w-0 flex-1 items-center justify-end">
                             <div
-                              className="h-2.5 w-full min-w-0 overflow-hidden rounded-full bg-bvm-softBorder/75 sm:w-[90%]"
+                              className="h-2.5 w-full min-w-0 overflow-hidden rounded-full bg-slate-200/90 sm:w-[90%]"
                               role="progressbar"
                               aria-valuenow={done}
                               aria-valuemin={0}
@@ -794,14 +838,14 @@ export function SelfReflectionSection({ headingId }: Props) {
                               />
                             </div>
                           </div>
-                          <span className="shrink-0 text-[0.65rem] font-medium tabular-nums text-bvm-muted sm:text-[0.7rem]">
+                          <span className="shrink-0 text-[0.65rem] font-medium tabular-nums text-slate-600 sm:text-[0.7rem]">
                             {total > 0 ? `${done}/${total}` : "0/0"}
                           </span>
                           {canSubmit ? (
                             <button
                               type="button"
                               onClick={() => handleSubmitWeek(week.id)}
-                              className="shrink-0 rounded-full border border-bvm-title/50 bg-white/90 px-3 py-1.5 text-[0.68rem] font-semibold text-bvm-title shadow-sm transition-colors hover:bg-bvm-title hover:text-white sm:text-[0.72rem]"
+                              className={`${JOURNAL_COLLAPSE_BUTTON_CLASS} text-[0.68rem] sm:text-[0.72rem]`}
                             >
                               Submit Reflection
                             </button>
@@ -813,7 +857,7 @@ export function SelfReflectionSection({ headingId }: Props) {
                     <div className="flex items-center gap-2">
                       <label
                         htmlFor={`${week.id}-reflection-date`}
-                        className="text-[0.62rem] font-medium text-bvm-muted sm:text-[0.65rem]"
+                        className="text-[0.62rem] font-medium text-slate-600 sm:text-[0.65rem]"
                       >
                         Reflection date
                       </label>
@@ -824,19 +868,19 @@ export function SelfReflectionSection({ headingId }: Props) {
                         onChange={(e) => setReflectionWeekDate(week.id, e.target.value)}
                         readOnly={!isEditable}
                         aria-readonly={!isEditable}
-                        className="rounded-md border border-bvm-softBorder bg-white px-2 py-1 text-[0.65rem] font-medium text-bvm-text focus:border-bvm-action focus:outline-none focus:ring-2 focus:ring-bvm-action/15 sm:text-[0.68rem]"
+                        className="rounded-md border border-slate-200/80 bg-white/90 px-2 py-1 text-[0.65rem] font-medium text-slate-700 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.68rem]"
                       />
                     </div>
                   </div>
 
                   {week.measures.length === 0 ? (
-                    <p className="py-6 text-center text-[0.85rem] text-bvm-muted">No areas in this week yet.</p>
+                    <p className="py-6 text-center text-[0.85rem] text-slate-600">No areas in this week yet.</p>
                   ) : (
                     <ul className="space-y-3 sm:space-y-4">
                       {week.measures.map((m, i) => (
-                        <li key={m.id} className="flex items-stretch gap-1.5 sm:gap-2">
-                          <div className="w-[26%] min-w-0 shrink-0 sm:w-[28%]">
-                            <p className="text-[0.68rem] font-semibold text-bvm-muted sm:text-[0.72rem]">
+                        <li key={m.id} className="flex flex-wrap items-stretch gap-1.5 sm:flex-nowrap sm:gap-2">
+                          <div className="w-full min-w-0 shrink-0 sm:w-[28%]">
+                            <p className="text-[0.68rem] font-semibold text-slate-700 sm:text-[0.72rem]">
                               Area {i + 1}:
                             </p>
                             {isEditable ? (
@@ -844,18 +888,18 @@ export function SelfReflectionSection({ headingId }: Props) {
                                 type="text"
                                 value={m.area}
                                 onChange={(e) => updateReflectionMeasure(m.id, { area: e.target.value })}
-                                className="mt-0.5 w-full rounded-lg border border-bvm-softBorder bg-white px-2 py-1 text-[0.78rem] font-medium text-bvm-text focus:border-bvm-action focus:outline-none focus:ring-2 focus:ring-bvm-action/15 sm:text-[0.85rem]"
+                                className="mt-0.5 w-full rounded-lg border border-slate-200/80 bg-white/90 px-2 py-1 text-[0.78rem] font-medium text-slate-900 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/15 sm:text-[0.85rem]"
                               />
                             ) : (
                               <p
-                                className="mt-0.5 truncate text-[0.78rem] font-medium text-bvm-text sm:text-[0.85rem]"
+                                className="mt-0.5 truncate text-[0.78rem] font-medium text-slate-900 sm:text-[0.85rem]"
                                 title={m.area || undefined}
                               >
                                 {m.area || "—"}
                               </p>
                             )}
                             <p
-                              className="mt-1 truncate text-[0.62rem] text-bvm-muted sm:text-[0.65rem]"
+                              className="mt-1 truncate text-[0.62rem] text-slate-500 sm:text-[0.65rem]"
                               title={scaleDisplayName(m.scale)}
                             >
                               {scaleDisplayName(m.scale)}
@@ -864,11 +908,13 @@ export function SelfReflectionSection({ headingId }: Props) {
 
                           <div
                             className={[
-                              "flex min-w-0 flex-1 items-center overflow-hidden border border-bvm-softBorder bg-bvm-pageTop/70 px-2 shadow-[inset_0_1px_2px_rgba(5,43,99,0.04)]",
-                              m.scale === "words" ? "rounded-2xl py-2" : "rounded-full py-1.5",
+                              "flex min-w-0 flex-1 items-center overflow-hidden",
+                              m.scale === "emojis"
+                                ? "rounded-full border border-sky-200/60 bg-white/25 px-2 py-1.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]"
+                                : "px-1 py-1 sm:px-2",
                             ].join(" ")}
                           >
-                            <div className="w-full px-1.5">
+                            <div className="w-full px-0 sm:px-1.5">
                               <JournalRatingCell
                                 m={m}
                                 onPatch={(patch) => updateReflectionMeasure(m.id, patch)}
@@ -881,7 +927,7 @@ export function SelfReflectionSection({ headingId }: Props) {
                             <button
                               type="button"
                               onClick={() => removeReflectionMeasure(m.id)}
-                              className="shrink-0 self-center rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                              className={`${JOURNAL_ICON_BUTTON_CLASS} shrink-0 self-center p-1.5 hover:bg-red-50 hover:text-red-600`}
                               aria-label={`Delete measure ${i + 1}`}
                             >
                               <IconTrash />
@@ -898,6 +944,7 @@ export function SelfReflectionSection({ headingId }: Props) {
             })}
           </div>
         )}
+        </section>
       </section>
     </div>
   );

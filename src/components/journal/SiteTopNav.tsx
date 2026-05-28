@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React, { useState, useEffect } from "react";
 
@@ -44,16 +45,24 @@ export function SiteTopNav() {
   return (
     <>
       <header
-        className={`fixed top-0 z-50 w-full border-b border-[rgba(159,196,234,0.45)] bg-white/[0.86] shadow-[0_8px_24px_-22px_rgba(5,43,99,0.45)] backdrop-blur-md transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 z-50 w-full border-b border-bvm-borderStrong/55 bg-white/[0.92] shadow-[0_16px_42px_-30px_rgba(5,43,99,0.55)] backdrop-blur-md transition-transform duration-300 ease-in-out ${
           isVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
         <div className="flex flex-col sm:flex-row w-full items-start sm:items-center justify-between gap-3 px-4 py-3 sm:px-8 sm:py-3.5 lg:px-12">
           <Link
             href="/"
-            className="shrink-0 font-display text-[0.95rem] font-bold tracking-[0.1em] text-bvm-title sm:text-base"
+            className="flex shrink-0 items-center"
+            aria-label="Global Community Sports home"
           >
-            BEST VERSION OF ME
+            <Image
+              src="/brand/global-community-sports-logo.png"
+              alt="Global Community Sports"
+              width={760}
+              height={305}
+              priority
+              className="h-10 w-auto sm:h-11"
+            />
           </Link>
 
           <nav
@@ -83,10 +92,10 @@ export function SiteTopNav() {
                   key={href}
                   href={href}
                   className={[
-                    "block whitespace-nowrap text-[0.75rem] font-medium transition-colors sm:text-sm",
+                    "block whitespace-nowrap rounded-full border px-3 py-1.5 text-[0.75rem] font-medium transition-all sm:text-sm",
                     active
-                      ? "text-bvm-title underline decoration-bvm-title underline-offset-4"
-                      : "text-bvm-muted hover:text-bvm-title",
+                      ? "border-bvm-title bg-bvm-title text-white shadow-[0_8px_18px_-12px_rgba(5,43,99,0.5)]"
+                      : "border-transparent text-bvm-muted hover:border-bvm-borderStrong hover:bg-bvm-softBlue hover:text-bvm-title",
                   ].join(" ")}
                 >
                   {label}

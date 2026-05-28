@@ -12,25 +12,25 @@ import {
 } from "@/lib/self-compassion-storage";
 
 /** Align with Seeking Feedback / Giving Feedback / Self Reflection body & fields */
-const scBody = "text-[0.9375rem] leading-[1.75] text-slate-600 sm:text-[1rem]";
+const scBody = "text-[0.9375rem] leading-[1.75] text-bvm-muted sm:text-[1rem]";
 const scPrompt =
-  "text-[0.95rem] font-semibold leading-snug text-slate-800 sm:text-[1rem]";
+  "text-[0.95rem] font-semibold leading-snug text-bvm-fg sm:text-[1rem]";
 const scPartLabel =
-  "mb-2 block text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-slate-500 sm:text-[0.7rem]";
+  "mb-2 block text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-bvm-muted sm:text-[0.7rem]";
 const scTextarea =
-  "mt-3 w-full resize-y rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 text-[0.9375rem] leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20";
+  "mt-3 w-full resize-y rounded-xl border border-bvm-border bg-white px-4 py-3 text-[0.9375rem] leading-relaxed text-bvm-fg placeholder:text-bvm-muted/70 focus:border-bvm-action focus:outline-none focus:ring-2 focus:ring-bvm-action/20";
 const scChip =
-  "rounded-full border border-slate-200/90 bg-white/70 px-3 py-1.5 text-[0.8125rem] font-medium text-slate-700 transition-colors hover:bg-white/95 focus:outline-none focus:ring-2 focus:ring-bvm-title/20";
+  "rounded-full border border-bvm-border bg-white/80 px-3 py-1.5 text-[0.8125rem] font-medium text-bvm-muted transition-colors hover:border-bvm-borderStrong hover:bg-white hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-action/20";
 const scBtnPrimary =
-  "rounded-xl bg-bvm-title px-5 py-3 text-[0.95rem] font-semibold text-white shadow-sm transition-colors hover:bg-bvm-title/90 disabled:cursor-not-allowed disabled:opacity-40";
+  "rounded-xl bg-bvm-title px-5 py-3 text-[0.95rem] font-semibold text-white shadow-[0_8px_20px_rgba(5,43,99,0.22)] transition-all hover:-translate-y-0.5 hover:bg-bvm-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0";
 const scBtnSecondary =
-  "rounded-xl border border-slate-200/80 bg-white/80 px-4 py-2.5 text-[0.9375rem] font-semibold text-slate-800 shadow-sm transition-colors hover:bg-white";
+  "rounded-xl border border-bvm-border bg-white/85 px-4 py-2.5 text-[0.9375rem] font-semibold text-bvm-fg shadow-sm transition-colors hover:border-bvm-borderStrong hover:bg-white hover:text-bvm-title";
 
 /** Tighter insets + wider text block vs default glass (align with Seeking Feedback content / rim ratio) */
 const scCardInset = "px-4 py-6 sm:px-6 sm:py-7";
 
 const scResetBtn =
-  "shrink-0 rounded-lg px-2.5 py-1.5 text-[0.8125rem] font-semibold text-slate-500 transition-colors hover:bg-slate-100/80 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-bvm-title/25";
+  "shrink-0 rounded-lg px-2.5 py-1.5 text-[0.8125rem] font-semibold text-bvm-muted transition-colors hover:bg-bvm-softBlue hover:text-bvm-title focus:outline-none focus:ring-2 focus:ring-bvm-action/25";
 
 function snapshotFromState(
   step: number,

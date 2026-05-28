@@ -5,11 +5,11 @@ export const SLIDER_TRACK_WIDTH_PCT = 100;
 export const PILL_BUTTON_GAP_REM = 1.5;
 
 export const SEGMENTED_SOLID_BG = [
-  "#ffffff",
-  "#f7fbff",
-  "#eef6ff",
-  "#d7e7f7",
-  "#9fc4ea",
+  "#eef5fb",
+  "#dbeaf7",
+  "#bfd9ee",
+  "#8eb8db",
+  "#5f94c5",
 ] as const;
 
 export const RATING_SKILLS: { id: string; label: string }[] = [
@@ -100,18 +100,36 @@ export const STORAGE_KEY = "bvm_journal_v1";
  * Frosted glass body — add one of `JOURNAL_GLASS_BORDER.*` for a tinted rim (“effect 1”).
  */
 export const JOURNAL_GLASS_PANEL_BASE =
-  "rounded-[1.25rem] border bg-white/[0.94] px-5 py-8 shadow-[0_18px_45px_rgba(5,43,99,0.10),inset_0_1px_0_rgba(255,255,255,0.72)] backdrop-blur-md sm:rounded-[1.5rem] sm:px-8 sm:py-9";
+  "rounded-[1.35rem] border bg-white/[0.96] px-5 py-7 shadow-[0_28px_70px_-34px_rgba(5,43,99,0.42),0_2px_0_rgba(255,255,255,0.9),inset_0_1px_0_rgba(255,255,255,0.85)] ring-1 ring-white/80 backdrop-blur-md sm:rounded-[1.5rem] sm:px-8 sm:py-8";
 
-/** Shared soft blue rims keep journal blocks visually connected. */
+/** Distinct rim colors per journal block */
 export const JOURNAL_GLASS_BORDER = {
-  skillsRating: "border-bvm-activeBorder/85",
-  seekingFeedback: "border-bvm-softBorder",
-  givingFeedback: "border-bvm-softBorder",
-  selfReflection: "border-bvm-softBorder",
-  selfCompassion: "border-bvm-softBorder",
-  mindfulness: "border-bvm-softBorder",
-  emotionalAwareness: "border-bvm-softBorder",
+  skillsRating: "border-bvm-borderStrong/70",
+  seekingFeedback: "border-bvm-borderStrong/70",
+  givingFeedback: "border-bvm-borderStrong/70",
+  selfReflection: "border-bvm-borderStrong/70",
+  selfCompassion: "border-bvm-borderStrong/70",
+  mindfulness: "border-bvm-borderStrong/70",
+  emotionalAwareness: "border-bvm-borderStrong/70",
 } as const;
+
+export const JOURNAL_SUBHEADING_CLASS =
+  "font-display text-center text-[1.05rem] font-semibold tracking-[0.04em] text-bvm-title sm:text-[1.15rem]";
+
+export const JOURNAL_RECORDS_SHELL_CLASS =
+  "rounded-2xl border border-bvm-border bg-bvm-softBlue/35 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]";
+
+export const JOURNAL_RECORD_CARD_CLASS =
+  "rounded-2xl border border-bvm-border bg-white/80 px-4 py-4 shadow-[0_12px_30px_-24px_rgba(5,43,99,0.24),inset_0_1px_0_rgba(255,255,255,0.8)]";
+
+export const JOURNAL_PRIMARY_BUTTON_CLASS =
+  "rounded-xl bg-bvm-title px-5 py-3 text-[0.95rem] font-semibold text-white shadow-[0_8px_20px_rgba(5,43,99,0.22)] transition-all hover:-translate-y-0.5 hover:bg-bvm-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bvm-action/25 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0";
+
+export const JOURNAL_COLLAPSE_BUTTON_CLASS =
+  "shrink-0 rounded-full border border-bvm-borderStrong bg-white/90 px-3 py-1.5 text-[0.72rem] font-semibold text-bvm-title shadow-sm transition-colors hover:bg-bvm-title hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bvm-action/25";
+
+export const JOURNAL_ICON_BUTTON_CLASS =
+  "rounded-lg p-2 text-bvm-muted transition-colors hover:bg-bvm-softBlue hover:text-bvm-title focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bvm-action/20";
 
 export type SelfReflectionScale = "numbers" | "words" | "emojis";
 
@@ -396,7 +414,7 @@ export function exportMarkdown(state: JournalState): string {
     lines.push("");
   }
 
-  lines.push("## Self reflection (demo)");
+  lines.push("## Self reflection");
   lines.push("");
   lines.push(`- Area: ${state.reflectionArea.trim() || "_(empty)_"}`);
   lines.push(`- Scoring scale: ${state.reflectionScale}`);
@@ -441,4 +459,460 @@ export function exportMarkdown(state: JournalState): string {
   lines.push(state.givingFeedbackText.trim() || "_(empty)_");
   lines.push("");
   return lines.join("\n");
+}
+
+export function buildSelfAwarenessReport(state: JournalState): string {
+  const lines: string[] = ["# Self-Awareness Page Report", ""];
+  const empty = "_(empty)_";
+  const notSelected = "_(not selected)_";
+  const formatDuration = (seconds: number): string => {
+    const safeSeconds = Math.max(0, Math.round(seconds));
+    const mins = Math.floor(safeSeconds / 60);
+    const secs = String(safeSeconds % 60).padStart(2, "0");
+    return `${mins}:${secs}`;
+  };
+  const reflectionRating = (measure: SelfReflectionMeasure): string => {
+    if (measure.scale === "numbers") {
+      return measure.numberValue == null ? notSelected : String(measure.numberValue);
+    }
+    if (measure.scale === "words") {
+      const palette =
+        measure.wordTokens.length > 0
+          ? measure.wordTokens
+          : measure.wordChoice != null
+            ? [legacyWordChoiceToLabel(measure.wordChoice)]
+            : [];
+      return measure.wordRatingIndex != null && palette[measure.wordRatingIndex] != null
+        ? palette[measure.wordRatingIndex]!
+        : notSelected;
+    }
+    return measure.emojiIndex == null
+      ? notSelected
+      : ["Low", "Okay", "Good", "Great"][measure.emojiIndex] ?? notSelected;
+  };
+
+  lines.push("## Skills rating");
+  for (const { id, label } of RATING_SKILLS) {
+    lines.push(`- ${label}: ${state.ratings[id] ?? notSelected}`);
+  }
+
+  lines.push("");
+  lines.push("## Saved skills rating records");
+  if (state.skillRatingSnapshots.length === 0) {
+    lines.push(empty);
+  } else {
+    for (const snapshot of state.skillRatingSnapshots) {
+      lines.push(`- ${snapshot.date} (${snapshot.createdAt})`);
+      for (const { id, label } of RATING_SKILLS) {
+        lines.push(`  - ${label}: ${snapshot.ratings[id] ?? notSelected}`);
+      }
+    }
+  }
+
+  lines.push("");
+  lines.push("## Self compassion");
+  for (const { id, prompt } of COMPASSION_PROMPTS) {
+    lines.push(`- ${prompt}: ${state.compassion[id]?.trim() || empty}`);
+  }
+
+  lines.push("");
+  lines.push("## Current self reflection choices");
+  lines.push(`- Current reflection area: ${state.reflectionArea.trim() || empty}`);
+  lines.push(`- Scoring scale: ${state.reflectionScale}`);
+  lines.push(`- Number rating: ${state.reflectionNumberValue}`);
+  lines.push(`- Selected words: ${state.reflectionWordTokens.join(", ") || empty}`);
+
+  lines.push("");
+  lines.push("## Self reflection journal records");
+  if (state.reflectionWeeks.length === 0) {
+    lines.push(empty);
+  } else {
+    for (const week of state.reflectionWeeks) {
+      lines.push(`- ${week.label}${week.submitted ? " (submitted)" : ""}: ${week.reflectionDate}`);
+      if (week.measures.length === 0) {
+        lines.push(`  - ${empty}`);
+      }
+      for (const measure of week.measures) {
+        lines.push(
+          `  - ${measure.area.trim() || empty}: ${measure.scale}, rating ${reflectionRating(measure)}`,
+        );
+      }
+    }
+  }
+
+  lines.push("");
+  lines.push("## Mindfulness practice records");
+  if (state.mindfulnessSessions.length === 0) {
+    lines.push(empty);
+  } else {
+    for (const session of state.mindfulnessSessions) {
+      const totalSeconds = session.practices.reduce(
+        (total, practice) => total + practice.durationSeconds,
+        0,
+      );
+      lines.push(
+        `- ${session.label}${session.submitted ? " (submitted)" : ""}: ${session.practiceDate}`,
+      );
+      lines.push(`  - Total practice time: ${formatDuration(totalSeconds)}`);
+      for (const practice of session.practices) {
+        lines.push(`  - ${practice.exerciseTitle}: ${formatDuration(practice.durationSeconds)}`);
+      }
+      lines.push(`  - Feel: ${session.feelText.trim() || empty}`);
+    }
+  }
+
+  lines.push("");
+  lines.push("## Feedback");
+  lines.push(`- Seeking feedback: ${state.seekingFeedbackText.trim() || empty}`);
+  lines.push(`- Giving feedback: ${state.givingFeedbackText.trim() || empty}`);
+  lines.push("");
+
+  return lines.join("\n");
+}
+
+function escapeReportHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function reportText(value: string | null | undefined): string {
+  const trimmed = value?.trim() ?? "";
+  return trimmed ? escapeReportHtml(trimmed) : '<span class="muted">Empty</span>';
+}
+
+function reportDuration(seconds: number): string {
+  const safeSeconds = Math.max(0, Math.round(seconds));
+  const mins = Math.floor(safeSeconds / 60);
+  const secs = String(safeSeconds % 60).padStart(2, "0");
+  return `${mins}:${secs}`;
+}
+
+function reflectionReportRating(measure: SelfReflectionMeasure): string {
+  if (measure.scale === "numbers") {
+    return measure.numberValue == null ? "Not selected" : String(measure.numberValue);
+  }
+  if (measure.scale === "words") {
+    const palette =
+      measure.wordTokens.length > 0
+        ? measure.wordTokens
+        : measure.wordChoice != null
+          ? [legacyWordChoiceToLabel(measure.wordChoice)]
+          : [];
+    return measure.wordRatingIndex != null && palette[measure.wordRatingIndex] != null
+      ? palette[measure.wordRatingIndex]!
+      : "Not selected";
+  }
+  return measure.emojiIndex == null
+    ? "Not selected"
+    : ["Low", "Okay", "Good", "Great"][measure.emojiIndex] ?? "Not selected";
+}
+
+function reportRatingPill(value: string | null | undefined): string {
+  const label = value ?? "-";
+  return `<span class="rating-pill">${escapeReportHtml(label)}</span>`;
+}
+
+export function buildSelfAwarenessReportHtml(state: JournalState): string {
+  const generatedAt = new Date().toLocaleString();
+  const skillRows = RATING_SKILLS.map(
+    ({ id, label }) => `
+      <tr>
+        <td>${escapeReportHtml(label)}</td>
+        <td>${reportRatingPill(state.ratings[id])}</td>
+      </tr>`,
+  ).join("");
+  const skillSnapshots =
+    state.skillRatingSnapshots.length === 0
+      ? '<p class="empty">No saved skills rating records yet.</p>'
+      : state.skillRatingSnapshots
+          .map(
+            (snapshot) => `
+              <article class="record-card">
+                <div class="record-title-row">
+                  <h3>${escapeReportHtml(snapshot.date)}</h3>
+                  <span>${escapeReportHtml(snapshot.createdAt)}</span>
+                </div>
+                <div class="rating-grid">
+                  ${RATING_SKILLS.map(
+                    ({ id, label }) => `
+                      <div class="mini-card">
+                        <span>${escapeReportHtml(label)}</span>
+                        <strong>${escapeReportHtml(snapshot.ratings[id] ?? "-")}</strong>
+                      </div>`,
+                  ).join("")}
+                </div>
+              </article>`,
+          )
+          .join("");
+  const compassionRows = COMPASSION_PROMPTS.map(
+    ({ id, prompt }) => `
+      <article class="record-card">
+        <h3>${escapeReportHtml(prompt)}</h3>
+        <p>${reportText(state.compassion[id])}</p>
+      </article>`,
+  ).join("");
+  const reflectionRecords =
+    state.reflectionWeeks.length === 0
+      ? '<p class="empty">No self reflection journal records yet.</p>'
+      : state.reflectionWeeks
+          .map(
+            (week) => `
+              <article class="record-card">
+                <div class="record-title-row">
+                  <h3>${escapeReportHtml(week.label)}</h3>
+                  <span>${escapeReportHtml(week.reflectionDate)}${week.submitted ? " · Submitted" : ""}</span>
+                </div>
+                ${
+                  week.measures.length === 0
+                    ? '<p class="empty">No areas in this week.</p>'
+                    : `<table>
+                        <thead>
+                          <tr><th>Area</th><th>Scale</th><th>Rating</th></tr>
+                        </thead>
+                        <tbody>
+                          ${week.measures
+                            .map(
+                              (measure) => `
+                                <tr>
+                                  <td>${reportText(measure.area)}</td>
+                                  <td>${escapeReportHtml(measure.scale)}</td>
+                                  <td>${escapeReportHtml(reflectionReportRating(measure))}</td>
+                                </tr>`,
+                            )
+                            .join("")}
+                        </tbody>
+                      </table>`
+                }
+              </article>`,
+          )
+          .join("");
+  const mindfulnessRecords =
+    state.mindfulnessSessions.length === 0
+      ? '<p class="empty">No mindfulness practice records yet.</p>'
+      : state.mindfulnessSessions
+          .map((session) => {
+            const totalSeconds = session.practices.reduce(
+              (total, practice) => total + practice.durationSeconds,
+              0,
+            );
+            return `
+              <article class="record-card">
+                <div class="record-title-row">
+                  <h3>${escapeReportHtml(session.label)}</h3>
+                  <span>${escapeReportHtml(session.practiceDate)}${session.submitted ? " · Submitted" : ""}</span>
+                </div>
+                <p class="meta">Total practice time: ${reportDuration(totalSeconds)}</p>
+                ${
+                  session.practices.length === 0
+                    ? '<p class="empty">No practices in this session.</p>'
+                    : `<div class="rating-grid">
+                        ${session.practices
+                          .map(
+                            (practice) => `
+                              <div class="mini-card">
+                                <span>${escapeReportHtml(practice.exerciseTitle)}</span>
+                                <strong>${reportDuration(practice.durationSeconds)}</strong>
+                              </div>`,
+                          )
+                          .join("")}
+                      </div>`
+                }
+                <p><strong>Feel:</strong> ${reportText(session.feelText)}</p>
+              </article>`;
+          })
+          .join("");
+
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Self-Awareness Report</title>
+    <style>
+      @page { size: A4; margin: 16mm; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        color: #102A43;
+        background: #F7FBFF;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+      .page {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 36px;
+        background: linear-gradient(180deg, #FFFFFF 0%, #F7FBFF 100%);
+      }
+      header {
+        border-bottom: 2px solid #D7E7F7;
+        padding-bottom: 22px;
+        margin-bottom: 26px;
+      }
+      .brand {
+        color: #052B63;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 10px 0 8px;
+        color: #052B63;
+        font-size: 34px;
+        line-height: 1.1;
+      }
+      h2 {
+        margin: 30px 0 12px;
+        color: #052B63;
+        font-size: 18px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      h3 { margin: 0 0 8px; color: #102A43; font-size: 15px; }
+      p { margin: 8px 0; }
+      .meta, .muted, .empty { color: #5D6F86; }
+      .summary-grid, .rating-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .summary-card, .mini-card, .record-card {
+        border: 1px solid #D7E7F7;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.94);
+      }
+      .summary-card { padding: 14px; }
+      .summary-card span, .mini-card span {
+        display: block;
+        color: #5D6F86;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .summary-card strong {
+        display: block;
+        margin-top: 4px;
+        color: #052B63;
+        font-size: 24px;
+      }
+      .record-card {
+        break-inside: avoid;
+        margin: 12px 0;
+        padding: 16px;
+      }
+      .record-title-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        border-bottom: 1px solid #D7E7F7;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+      }
+      .record-title-row span { color: #5D6F86; font-size: 12px; }
+      .mini-card { padding: 10px; }
+      .mini-card strong {
+        display: block;
+        margin-top: 3px;
+        color: #052B63;
+        font-size: 16px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border: 1px solid #D7E7F7;
+        border-radius: 14px;
+      }
+      th {
+        background: #EEF6FF;
+        color: #052B63;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      th, td {
+        border-bottom: 1px solid #D7E7F7;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+      tr:last-child td { border-bottom: 0; }
+      .rating-pill {
+        display: inline-flex;
+        min-width: 30px;
+        justify-content: center;
+        border-radius: 999px;
+        background: #052B63;
+        color: #FFFFFF;
+        padding: 3px 10px;
+        font-weight: 800;
+      }
+      footer {
+        margin-top: 34px;
+        border-top: 1px solid #D7E7F7;
+        padding-top: 12px;
+        color: #5D6F86;
+        font-size: 11px;
+      }
+      @media print {
+        body { background: #FFFFFF; }
+        .page { padding: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <div class="brand">Best Version of Me</div>
+        <h1>Self-Awareness Report</h1>
+        <p class="meta">Prepared ${escapeReportHtml(generatedAt)} from your saved journal entries.</p>
+      </header>
+
+      <section class="summary-grid">
+        <div class="summary-card"><span>Skills records</span><strong>${state.skillRatingSnapshots.length}</strong></div>
+        <div class="summary-card"><span>Reflection weeks</span><strong>${state.reflectionWeeks.length}</strong></div>
+        <div class="summary-card"><span>Mindfulness sessions</span><strong>${state.mindfulnessSessions.length}</strong></div>
+      </section>
+
+      <h2>Current Skills Rating</h2>
+      <table><tbody>${skillRows}</tbody></table>
+
+      <h2>Saved Skills Rating Records</h2>
+      ${skillSnapshots}
+
+      <h2>Self Compassion</h2>
+      ${compassionRows}
+
+      <h2>Current Self Reflection Choices</h2>
+      <article class="record-card">
+        <p><strong>Current reflection area:</strong> ${reportText(state.reflectionArea)}</p>
+        <p><strong>Scoring scale:</strong> ${escapeReportHtml(state.reflectionScale)}</p>
+        <p><strong>Number rating:</strong> ${state.reflectionNumberValue}</p>
+        <p><strong>Selected words:</strong> ${reportText(state.reflectionWordTokens.join(", "))}</p>
+      </article>
+
+      <h2>Self Reflection Journal Records</h2>
+      ${reflectionRecords}
+
+      <h2>Mindfulness Practice Records</h2>
+      ${mindfulnessRecords}
+
+      <h2>Feedback</h2>
+      <article class="record-card">
+        <h3>Seeking feedback</h3>
+        <p>${reportText(state.seekingFeedbackText)}</p>
+      </article>
+      <article class="record-card">
+        <h3>Giving feedback</h3>
+        <p>${reportText(state.givingFeedbackText)}</p>
+      </article>
+
+      <footer>Created by the Best Version of Me digital journal.</footer>
+    </main>
+  </body>
+</html>`;
 }
