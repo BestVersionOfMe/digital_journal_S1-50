@@ -406,9 +406,11 @@ function JournalRatingCell({
           ? palette[m.wordRatingIndex]
           : "—";
       return (
-        <p className="py-1 text-center text-[0.62rem] font-medium leading-tight text-slate-800 sm:text-[0.65rem]">
-          {label}
-        </p>
+        <div className="flex w-full justify-center py-1">
+          <span className="inline-flex min-h-[2.25rem] max-w-full items-center justify-center rounded-full border border-[#1f5fae] bg-[#eaf4ff] px-3 py-1.5 text-center text-[0.62rem] font-semibold leading-tight text-[#052b63] shadow-sm sm:px-4 sm:text-[0.72rem]">
+            {label}
+          </span>
+        </div>
       );
     }
     if (m.emojiIndex == null) {
