@@ -1,18 +1,20 @@
 "use client";
 
-import { useJournalStorage } from "@/hooks/useJournalStorage";
+import { parseJournalStateFromStorage } from "@/hooks/useJournalStorage";
+import { loadSelfCompassionWorkshop } from "@/lib/self-compassion-storage";
 import {
   buildSelfAwarenessReportHtml,
   JOURNAL_GLASS_BORDER,
   JOURNAL_GLASS_PANEL_BASE,
   JOURNAL_PRIMARY_BUTTON_CLASS,
   JOURNAL_SUBHEADING_CLASS,
+  STORAGE_KEY,
 } from "@/lib/self-awareness";
 
 export function JournalPageFooter() {
-  const { state } = useJournalStorage();
-
   const handleExportPdf = () => {
+    const latestState = parseJournalStateFromStorage(localStorage.getItem(STORAGE_KEY));
+    const selfCompassionWorkshop = loadSelfCompassionWorkshop();
     const frame = document.createElement("iframe");
     frame.title = "Self-Awareness PDF export";
     frame.style.position = "fixed";
@@ -36,7 +38,7 @@ export function JournalPageFooter() {
 
     reportWindow.onafterprint = cleanup;
     reportDocument.open();
-    reportDocument.write(buildSelfAwarenessReportHtml(state));
+    reportDocument.write(buildSelfAwarenessReportHtml(latestState, selfCompassionWorkshop));
     reportDocument.close();
     window.setTimeout(() => {
       reportWindow.focus();
