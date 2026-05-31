@@ -58,11 +58,11 @@ export function JournalPageFooter() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 id="self-awareness-report-heading" className={`${JOURNAL_SUBHEADING_CLASS} text-left`}>
-              SELF-AWARENESS REPORT
+              BEST VERSION OF ME JOURNAL REPORT
             </h2>
             <p className="mt-3 text-[0.85rem] leading-relaxed text-bvm-muted">
-              Create a polished summary of your self-awareness ratings, reflections, mindfulness
-              practice, and feedback notes.
+              Create a polished Best Version of Me journal summary with your self-compassion
+              reflection, ratings, feedback notes, self-reflection journal, and mindfulness practice.
             </p>
           </div>
           <button

@@ -40,23 +40,6 @@ const QUESTION_DECK = [
   },
 ];
 
-function PencilIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-    </svg>
-  );
-}
-
 function RecipientIcon({ type }: { type: string }) {
   if (type === "briefcase") {
     return (
@@ -360,22 +343,42 @@ export function SeekingFeedbackSection({ headingId, embedded = false }: Props) {
 
         {activeSubStep === 3 && (
           <div className="animate-fade-in space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <h3 className="text-[1rem] font-bold text-slate-800">Your Draft</h3>
-              {locked ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSeekingFeedbackSubmitted(false);
-                    setCopyStatus("");
-                  }}
-                  className="rounded-lg p-2 text-slate-500 transition-colors hover:text-bvm-title"
-                  aria-label="Edit request"
-                >
-                  <PencilIcon className="h-5 w-5" />
-                </button>
-              ) : null}
+              <div className="flex items-center gap-5">
+                {!locked ? (
+                  <button
+                    type="button"
+                    onClick={() => setSubStep(2)}
+                    className="text-[0.8125rem] font-medium text-slate-500 underline decoration-transparent underline-offset-4 transition-colors hover:text-slate-800 hover:decoration-slate-300"
+                  >
+                    Back
+                  </button>
+                ) : null}
+                {locked ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSeekingFeedbackSubmitted(false);
+                      setCopyStatus("");
+                    }}
+                    className={`${JOURNAL_PRIMARY_BUTTON_CLASS} px-5 py-2.5`}
+                  >
+                    Edit
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={trimmed.length === 0}
+                    onClick={handleCopyDraft}
+                    className={`${JOURNAL_PRIMARY_BUTTON_CLASS} px-5 py-2.5`}
+                  >
+                    Copy
+                  </button>
+                )}
+              </div>
             </div>
+
             {locked ? (
               <div className="min-h-[8rem] whitespace-pre-wrap rounded-xl border border-bvm-border bg-bvm-softBlue/35 px-5 py-4 text-[0.9375rem] leading-relaxed text-bvm-fg">
                 {text}
@@ -388,26 +391,6 @@ export function SeekingFeedbackSection({ headingId, embedded = false }: Props) {
                 className="w-full rounded-xl border border-slate-200/80 bg-white/70 px-5 py-4 text-[0.9375rem] text-slate-800 focus:border-bvm-title/50 focus:outline-none focus:ring-2 focus:ring-bvm-title/20"
               />
             )}
-
-            <div className="flex items-center justify-end gap-6 pt-4">
-              {!locked ? (
-                <button
-                  type="button"
-                  onClick={() => setSubStep(2)}
-                  className="text-[0.8125rem] font-medium text-slate-500 underline decoration-transparent underline-offset-4 transition-colors hover:text-slate-800 hover:decoration-slate-300"
-                >
-                  Back
-                </button>
-              ) : null}
-              <button
-                type="button"
-                disabled={trimmed.length === 0 || locked}
-                onClick={handleCopyDraft}
-                className={`${JOURNAL_PRIMARY_BUTTON_CLASS} px-5 py-2.5`}
-              >
-                Copy
-              </button>
-            </div>
 
             {copyStatus ? (
               <p className="text-right text-[0.78rem] font-medium text-bvm-muted">

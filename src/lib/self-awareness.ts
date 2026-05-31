@@ -733,21 +733,11 @@ export function buildSelfAwarenessReportHtml(
               </article>`,
           )
           .join("");
-  const hasCompassionPromptAnswers = COMPASSION_PROMPTS.some(
-    ({ id }) => (state.compassion[id]?.trim() ?? "").length > 0,
-  );
   const selfCompassionWorkshopRows = selfCompassionWorkshopCards(selfCompassionWorkshop);
-  const compassionRows = hasCompassionPromptAnswers
-    ? COMPASSION_PROMPTS.map(
-        ({ id, prompt }) => `
-          <article class="record-card">
-            <h3>${escapeReportHtml(prompt)}</h3>
-            <p>${reportText(state.compassion[id])}</p>
-          </article>`,
-      ).join("")
-    : selfCompassionWorkshopRows
-      ? ""
-      : '<p class="empty">No self compassion answers yet.</p>';
+  const hasSelfCompassionSummary = selfCompassionWorkshopRows.length > 0;
+  const compassionRows = selfCompassionWorkshopRows
+    ? selfCompassionWorkshopRows
+    : '<p class="empty">No self compassion summary yet.</p>';
   const reflectionRecords =
     state.reflectionWeeks.length === 0
       ? '<p class="empty">No self reflection journal records yet.</p>'
@@ -757,7 +747,7 @@ export function buildSelfAwarenessReportHtml(
               <article class="record-card">
                 <div class="record-title-row">
                   <h3>${escapeReportHtml(week.label)}</h3>
-                  <span>${escapeReportHtml(week.reflectionDate)}${week.submitted ? " · Submitted" : ""}</span>
+                  <span>${escapeReportHtml(week.reflectionDate)}${week.submitted ? " - Submitted" : ""}</span>
                 </div>
                 ${
                   week.measures.length === 0
@@ -796,7 +786,7 @@ export function buildSelfAwarenessReportHtml(
               <article class="record-card">
                 <div class="record-title-row">
                   <h3>${escapeReportHtml(session.label)}</h3>
-                  <span>${escapeReportHtml(session.practiceDate)}${session.submitted ? " · Submitted" : ""}</span>
+                  <span>${escapeReportHtml(session.practiceDate)}${session.submitted ? " - Submitted" : ""}</span>
                 </div>
                 <p class="meta">Total practice time: ${reportDuration(totalSeconds)}</p>
                 ${
@@ -844,7 +834,7 @@ export function buildSelfAwarenessReportHtml(
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Self-Awareness Report</title>
+    <title>Best Version of Me Journal Report</title>
     <style>
       @page { size: A4; margin: 16mm; }
       * { box-sizing: border-box; }
@@ -981,13 +971,14 @@ export function buildSelfAwarenessReportHtml(
   <body>
     <main class="page">
       <header>
-        <div class="brand">Best Version of Me</div>
-        <h1>Self-Awareness Report</h1>
-        <p class="meta">Prepared ${escapeReportHtml(generatedAt)} from your saved journal entries.</p>
+        <div class="brand">Global Community Sports</div>
+        <h1>Best Version of Me Journal Report</h1>
+        <p class="meta">Prepared ${escapeReportHtml(generatedAt)} from your saved workshop journal entries.</p>
       </header>
 
       <section class="summary-grid">
         <div class="summary-card"><span>Skills records</span><strong>${state.skillRatingSnapshots.length}</strong></div>
+        <div class="summary-card"><span>Self compassion</span><strong>${hasSelfCompassionSummary ? "1" : "0"}</strong></div>
         <div class="summary-card"><span>Feedback records</span><strong>${state.seekingFeedbackRecords.length + state.givingFeedbackRecords.length}</strong></div>
         <div class="summary-card"><span>Reflection weeks</span><strong>${state.reflectionWeeks.length}</strong></div>
         <div class="summary-card"><span>Mindfulness sessions</span><strong>${state.mindfulnessSessions.length}</strong></div>
@@ -998,7 +989,6 @@ export function buildSelfAwarenessReportHtml(
 
       <h2>Self Compassion</h2>
       ${compassionRows}
-      ${selfCompassionWorkshopRows}
 
       <h2>Feedback</h2>
       ${feedbackRecordCards("Seeking feedback record", state.seekingFeedbackRecords)}
@@ -1010,7 +1000,7 @@ export function buildSelfAwarenessReportHtml(
       <h2>Mindfulness Practice Records</h2>
       ${mindfulnessRecords}
 
-      <footer>Created by the Best Version of Me digital journal.</footer>
+      <footer>Created for the Best Version of Me workshop journal by Global Community Sports.</footer>
     </main>
   </body>
 </html>`;
