@@ -1,5 +1,7 @@
 /** Mirrors `bvm_journal/sections/self_awareness.py` — content + export shape. */
 
+import type { SelfCompassionWorkshopSnapshot } from "@/lib/self-compassion-storage";
+
 export const RATING_TABLE_WIDTH_PCT = 100;
 export const SLIDER_TRACK_WIDTH_PCT = 100;
 export const PILL_BUTTON_GAP_REM = 1.5;
@@ -204,7 +206,7 @@ export function ensureCustomPoolCoversSelections(tokens: string[], pool: string[
   return normalizeCustomWordPool([...pool, ...tokens]);
 }
 
-/** One saved row in “My self reflection journal” (Week One). */
+/** One saved row in “My self reflection journal” (Week 1). */
 export type SelfReflectionMeasure = {
   id: string;
   area: string;
@@ -223,10 +225,10 @@ export type SelfReflectionMeasure = {
   emojiIndex: number | null;
 };
 
-/** One week block in “My self reflection journal” (Week One, Week Two, …). */
+/** One week block in “My self reflection journal” (Week 1, Week 2, …). */
 export type ReflectionWeekBlock = {
   id: string;
-  /** Display label, e.g. "Week One". */
+  /** Display label, e.g. "Week 1". */
   label: string;
   /** Reflection date (`YYYY-MM-DD`) shown under the week title. */
   reflectionDate: string;
@@ -259,6 +261,13 @@ export type SkillRatingSnapshot = {
   ratings: Record<string, string | null>;
 };
 
+export type FeedbackDraftRecord = {
+  id: string;
+  createdAt: string;
+  draftText: string;
+  feelText: string;
+};
+
 export type JournalState = {
   ratings: Record<string, string | null>;
   skillRatingSnapshots: SkillRatingSnapshot[];
@@ -274,16 +283,18 @@ export type JournalState = {
   reflectionCustomWordPool: string[];
   /** Emojis scale: 0–3 (Low → Great) */
   reflectionEmojiIndex: number;
-  /** Self-reflection journal weeks (Week One, Week Two, …) */
+  /** Self-reflection journal weeks (Week 1, Week 2, …) */
   reflectionWeeks: ReflectionWeekBlock[];
   mindfulnessSessions: MindfulnessSessionRecord[];
   /** Seeking Feedback — who to ask */
   seekingFeedbackText: string;
   /** After Submit: textarea is read-only until user taps edit */
   seekingFeedbackSubmitted: boolean;
+  seekingFeedbackRecords: FeedbackDraftRecord[];
   /** Giving Feedback — Glow & Grow plan */
   givingFeedbackText: string;
   givingFeedbackSubmitted: boolean;
+  givingFeedbackRecords: FeedbackDraftRecord[];
 };
 
 export function defaultJournalState(): JournalState {
@@ -309,16 +320,15 @@ export function defaultJournalState(): JournalState {
     mindfulnessSessions: [],
     seekingFeedbackText: "",
     seekingFeedbackSubmitted: false,
+    seekingFeedbackRecords: [],
     givingFeedbackText: "",
     givingFeedbackSubmitted: false,
+    givingFeedbackRecords: [],
   };
 }
 
-const WEEK_ORDINAL = ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight"] as const;
-
 export function weekLabelFromIndex(index: number): string {
-  const o = WEEK_ORDINAL[index];
-  return o ? `Week ${o}` : `Week ${index + 1}`;
+  return `Week ${index + 1}`;
 }
 
 export function newReflectionMeasureId(): string {
@@ -337,6 +347,10 @@ export function newMindfulnessPracticeId(): string {
 }
 
 export function newMindfulnessSessionId(): string {
+  return newReflectionMeasureId();
+}
+
+export function newFeedbackDraftRecordId(): string {
   return newReflectionMeasureId();
 }
 
@@ -453,10 +467,28 @@ export function exportMarkdown(state: JournalState): string {
   lines.push("### Seeking feedback");
   lines.push("");
   lines.push(state.seekingFeedbackText.trim() || "_(empty)_");
+  if (state.seekingFeedbackRecords.length > 0) {
+    lines.push("");
+    lines.push("#### Seeking feedback records");
+    for (const record of state.seekingFeedbackRecords) {
+      lines.push(`- ${record.createdAt}`);
+      lines.push(`  - Draft: ${record.draftText.trim() || "_(empty)_"}`);
+      lines.push(`  - Reflection: ${record.feelText.trim() || "_(empty)_"}`);
+    }
+  }
   lines.push("");
   lines.push("### Giving feedback");
   lines.push("");
   lines.push(state.givingFeedbackText.trim() || "_(empty)_");
+  if (state.givingFeedbackRecords.length > 0) {
+    lines.push("");
+    lines.push("#### Giving feedback records");
+    for (const record of state.givingFeedbackRecords) {
+      lines.push(`- ${record.createdAt}`);
+      lines.push(`  - Draft: ${record.draftText.trim() || "_(empty)_"}`);
+      lines.push(`  - Reflection: ${record.feelText.trim() || "_(empty)_"}`);
+    }
+  }
   lines.push("");
   return lines.join("\n");
 }
@@ -491,12 +523,6 @@ export function buildSelfAwarenessReport(state: JournalState): string {
       : ["Low", "Okay", "Good", "Great"][measure.emojiIndex] ?? notSelected;
   };
 
-  lines.push("## Skills rating");
-  for (const { id, label } of RATING_SKILLS) {
-    lines.push(`- ${label}: ${state.ratings[id] ?? notSelected}`);
-  }
-
-  lines.push("");
   lines.push("## Saved skills rating records");
   if (state.skillRatingSnapshots.length === 0) {
     lines.push(empty);
@@ -516,11 +542,28 @@ export function buildSelfAwarenessReport(state: JournalState): string {
   }
 
   lines.push("");
-  lines.push("## Current self reflection choices");
-  lines.push(`- Current reflection area: ${state.reflectionArea.trim() || empty}`);
-  lines.push(`- Scoring scale: ${state.reflectionScale}`);
-  lines.push(`- Number rating: ${state.reflectionNumberValue}`);
-  lines.push(`- Selected words: ${state.reflectionWordTokens.join(", ") || empty}`);
+  lines.push("## Feedback");
+  lines.push("### Seeking feedback records");
+  if (state.seekingFeedbackRecords.length === 0) {
+    lines.push(empty);
+  } else {
+    for (const record of state.seekingFeedbackRecords) {
+      lines.push(`- Record ${record.createdAt}`);
+      lines.push(`  - Draft: ${record.draftText.trim() || empty}`);
+      lines.push(`  - Reflection: ${record.feelText.trim() || empty}`);
+    }
+  }
+  lines.push("");
+  lines.push("### Giving feedback records");
+  if (state.givingFeedbackRecords.length === 0) {
+    lines.push(empty);
+  } else {
+    for (const record of state.givingFeedbackRecords) {
+      lines.push(`- Record ${record.createdAt}`);
+      lines.push(`  - Draft: ${record.draftText.trim() || empty}`);
+      lines.push(`  - Reflection: ${record.feelText.trim() || empty}`);
+    }
+  }
 
   lines.push("");
   lines.push("## Self reflection journal records");
@@ -561,10 +604,6 @@ export function buildSelfAwarenessReport(state: JournalState): string {
     }
   }
 
-  lines.push("");
-  lines.push("## Feedback");
-  lines.push(`- Seeking feedback: ${state.seekingFeedbackText.trim() || empty}`);
-  lines.push(`- Giving feedback: ${state.givingFeedbackText.trim() || empty}`);
   lines.push("");
 
   return lines.join("\n");
@@ -611,20 +650,66 @@ function reflectionReportRating(measure: SelfReflectionMeasure): string {
     : ["Low", "Okay", "Good", "Great"][measure.emojiIndex] ?? "Not selected";
 }
 
-function reportRatingPill(value: string | null | undefined): string {
-  const label = value ?? "-";
-  return `<span class="rating-pill">${escapeReportHtml(label)}</span>`;
+function selfCompassionWorkshopCards(
+  workshop: SelfCompassionWorkshopSnapshot | null | undefined,
+): string {
+  if (!workshop) return "";
+
+  const rows: Array<[string, string]> = [
+    ["Something I like about myself", workshop.q1Answer],
+    ["Something I feel I am good at", workshop.q2Answer],
+    ["Something I worked hard to get good at", workshop.q3Answer],
+    ["A skill or habit that comes easily to me", workshop.q4Answer],
+    ["Something I am proud of", workshop.q5Answer],
+  ];
+  const q6Parts = [
+    workshop.blankAnswers.q6_emotion,
+    workshop.blankAnswers.q6_action,
+  ].filter(Boolean);
+  if (q6Parts.length > 0) {
+    rows.push(["How I treat others", q6Parts.join(" - ")]);
+  }
+  const q7Parts = [
+    workshop.blankAnswers.q7_people,
+    workshop.blankAnswers.q7_method,
+    workshop.blankAnswers.q7_example,
+  ].filter(Boolean);
+  if (q7Parts.length > 0) {
+    rows.push(["Through others' eyes", q7Parts.join(" - ")]);
+  }
+  if (workshop.q8Choice) {
+    rows.push([
+      "Reaction to mistakes",
+      workshop.q8Choice === "positive" ? "Just a silly mistake." : "I suck at this!",
+    ]);
+  }
+  if (workshop.q9Choice) rows.push(["Would I say that to a friend?", workshop.q9Choice]);
+  if (workshop.reallyChoice) rows.push(["Follow-up choice", workshop.reallyChoice]);
+  if (workshop.q10Answer.trim()) rows.push(["Kinder message", workshop.q10Answer]);
+
+  const visibleRows = rows.filter(([, value]) => value.trim().length > 0);
+  if (visibleRows.length === 0) return "";
+
+  return `
+      <article class="record-card">
+        <div class="record-title-row">
+          <h3>Self compassion workshop answers</h3>
+          <span>Step ${workshop.step}${workshop.isCompleted ? " - Completed" : ""}</span>
+        </div>
+        ${visibleRows
+          .map(
+            ([label, value]) => `
+              <p><strong>${escapeReportHtml(label)}:</strong> ${reportText(value)}</p>`,
+          )
+          .join("")}
+      </article>`;
 }
 
-export function buildSelfAwarenessReportHtml(state: JournalState): string {
+export function buildSelfAwarenessReportHtml(
+  state: JournalState,
+  selfCompassionWorkshop?: SelfCompassionWorkshopSnapshot | null,
+): string {
   const generatedAt = new Date().toLocaleString();
-  const skillRows = RATING_SKILLS.map(
-    ({ id, label }) => `
-      <tr>
-        <td>${escapeReportHtml(label)}</td>
-        <td>${reportRatingPill(state.ratings[id])}</td>
-      </tr>`,
-  ).join("");
   const skillSnapshots =
     state.skillRatingSnapshots.length === 0
       ? '<p class="empty">No saved skills rating records yet.</p>'
@@ -648,13 +733,11 @@ export function buildSelfAwarenessReportHtml(state: JournalState): string {
               </article>`,
           )
           .join("");
-  const compassionRows = COMPASSION_PROMPTS.map(
-    ({ id, prompt }) => `
-      <article class="record-card">
-        <h3>${escapeReportHtml(prompt)}</h3>
-        <p>${reportText(state.compassion[id])}</p>
-      </article>`,
-  ).join("");
+  const selfCompassionWorkshopRows = selfCompassionWorkshopCards(selfCompassionWorkshop);
+  const hasSelfCompassionSummary = selfCompassionWorkshopRows.length > 0;
+  const compassionRows = selfCompassionWorkshopRows
+    ? selfCompassionWorkshopRows
+    : '<p class="empty">No self compassion summary yet.</p>';
   const reflectionRecords =
     state.reflectionWeeks.length === 0
       ? '<p class="empty">No self reflection journal records yet.</p>'
@@ -664,7 +747,7 @@ export function buildSelfAwarenessReportHtml(state: JournalState): string {
               <article class="record-card">
                 <div class="record-title-row">
                   <h3>${escapeReportHtml(week.label)}</h3>
-                  <span>${escapeReportHtml(week.reflectionDate)}${week.submitted ? " · Submitted" : ""}</span>
+                  <span>${escapeReportHtml(week.reflectionDate)}${week.submitted ? " - Submitted" : ""}</span>
                 </div>
                 ${
                   week.measures.length === 0
@@ -703,7 +786,7 @@ export function buildSelfAwarenessReportHtml(state: JournalState): string {
               <article class="record-card">
                 <div class="record-title-row">
                   <h3>${escapeReportHtml(session.label)}</h3>
-                  <span>${escapeReportHtml(session.practiceDate)}${session.submitted ? " · Submitted" : ""}</span>
+                  <span>${escapeReportHtml(session.practiceDate)}${session.submitted ? " - Submitted" : ""}</span>
                 </div>
                 <p class="meta">Total practice time: ${reportDuration(totalSeconds)}</p>
                 ${
@@ -725,12 +808,33 @@ export function buildSelfAwarenessReportHtml(state: JournalState): string {
               </article>`;
           })
           .join("");
+  const feedbackRecordCards = (
+    title: string,
+    records: FeedbackDraftRecord[],
+  ): string =>
+    records.length === 0
+      ? `<p class="empty">No ${escapeReportHtml(title.toLowerCase())} records yet.</p>`
+      : records
+          .map(
+            (record, index) => `
+              <article class="record-card">
+                <div class="record-title-row">
+                  <h3>${escapeReportHtml(title)} ${records.length - index}</h3>
+                  <span>${escapeReportHtml(record.createdAt)}</span>
+                </div>
+                <p><strong>Draft:</strong></p>
+                <p>${reportText(record.draftText)}</p>
+                <p><strong>Reflection:</strong></p>
+                <p>${reportText(record.feelText)}</p>
+              </article>`,
+          )
+          .join("");
 
   return `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Self-Awareness Report</title>
+    <title>Best Version of Me Journal Report</title>
     <style>
       @page { size: A4; margin: 16mm; }
       * { box-sizing: border-box; }
@@ -867,19 +971,18 @@ export function buildSelfAwarenessReportHtml(state: JournalState): string {
   <body>
     <main class="page">
       <header>
-        <div class="brand">Best Version of Me</div>
-        <h1>Self-Awareness Report</h1>
-        <p class="meta">Prepared ${escapeReportHtml(generatedAt)} from your saved journal entries.</p>
+        <div class="brand">Global Community Sports</div>
+        <h1>Best Version of Me Journal Report</h1>
+        <p class="meta">Prepared ${escapeReportHtml(generatedAt)} from your saved workshop journal entries.</p>
       </header>
 
       <section class="summary-grid">
         <div class="summary-card"><span>Skills records</span><strong>${state.skillRatingSnapshots.length}</strong></div>
+        <div class="summary-card"><span>Self compassion</span><strong>${hasSelfCompassionSummary ? "1" : "0"}</strong></div>
+        <div class="summary-card"><span>Feedback records</span><strong>${state.seekingFeedbackRecords.length + state.givingFeedbackRecords.length}</strong></div>
         <div class="summary-card"><span>Reflection weeks</span><strong>${state.reflectionWeeks.length}</strong></div>
         <div class="summary-card"><span>Mindfulness sessions</span><strong>${state.mindfulnessSessions.length}</strong></div>
       </section>
-
-      <h2>Current Skills Rating</h2>
-      <table><tbody>${skillRows}</tbody></table>
 
       <h2>Saved Skills Rating Records</h2>
       ${skillSnapshots}
@@ -887,13 +990,9 @@ export function buildSelfAwarenessReportHtml(state: JournalState): string {
       <h2>Self Compassion</h2>
       ${compassionRows}
 
-      <h2>Current Self Reflection Choices</h2>
-      <article class="record-card">
-        <p><strong>Current reflection area:</strong> ${reportText(state.reflectionArea)}</p>
-        <p><strong>Scoring scale:</strong> ${escapeReportHtml(state.reflectionScale)}</p>
-        <p><strong>Number rating:</strong> ${state.reflectionNumberValue}</p>
-        <p><strong>Selected words:</strong> ${reportText(state.reflectionWordTokens.join(", "))}</p>
-      </article>
+      <h2>Feedback</h2>
+      ${feedbackRecordCards("Seeking feedback record", state.seekingFeedbackRecords)}
+      ${feedbackRecordCards("Giving feedback record", state.givingFeedbackRecords)}
 
       <h2>Self Reflection Journal Records</h2>
       ${reflectionRecords}
@@ -901,17 +1000,7 @@ export function buildSelfAwarenessReportHtml(state: JournalState): string {
       <h2>Mindfulness Practice Records</h2>
       ${mindfulnessRecords}
 
-      <h2>Feedback</h2>
-      <article class="record-card">
-        <h3>Seeking feedback</h3>
-        <p>${reportText(state.seekingFeedbackText)}</p>
-      </article>
-      <article class="record-card">
-        <h3>Giving feedback</h3>
-        <p>${reportText(state.givingFeedbackText)}</p>
-      </article>
-
-      <footer>Created by the Best Version of Me digital journal.</footer>
+      <footer>Created for the Best Version of Me workshop journal by Global Community Sports.</footer>
     </main>
   </body>
 </html>`;

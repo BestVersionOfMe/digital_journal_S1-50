@@ -1,18 +1,20 @@
 "use client";
 
-import { useJournalStorage } from "@/hooks/useJournalStorage";
+import { parseJournalStateFromStorage } from "@/hooks/useJournalStorage";
+import { loadSelfCompassionWorkshop } from "@/lib/self-compassion-storage";
 import {
   buildSelfAwarenessReportHtml,
   JOURNAL_GLASS_BORDER,
   JOURNAL_GLASS_PANEL_BASE,
   JOURNAL_PRIMARY_BUTTON_CLASS,
   JOURNAL_SUBHEADING_CLASS,
+  STORAGE_KEY,
 } from "@/lib/self-awareness";
 
 export function JournalPageFooter() {
-  const { state } = useJournalStorage();
-
   const handleExportPdf = () => {
+    const latestState = parseJournalStateFromStorage(localStorage.getItem(STORAGE_KEY));
+    const selfCompassionWorkshop = loadSelfCompassionWorkshop();
     const frame = document.createElement("iframe");
     frame.title = "Self-Awareness PDF export";
     frame.style.position = "fixed";
@@ -36,7 +38,7 @@ export function JournalPageFooter() {
 
     reportWindow.onafterprint = cleanup;
     reportDocument.open();
-    reportDocument.write(buildSelfAwarenessReportHtml(state));
+    reportDocument.write(buildSelfAwarenessReportHtml(latestState, selfCompassionWorkshop));
     reportDocument.close();
     window.setTimeout(() => {
       reportWindow.focus();
@@ -56,11 +58,11 @@ export function JournalPageFooter() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 id="self-awareness-report-heading" className={`${JOURNAL_SUBHEADING_CLASS} text-left`}>
-              SELF-AWARENESS REPORT
+              BEST VERSION OF ME JOURNAL REPORT
             </h2>
             <p className="mt-3 text-[0.85rem] leading-relaxed text-bvm-muted">
-              Create a polished summary of your self-awareness ratings, reflections, mindfulness
-              practice, and feedback notes.
+              Create a polished Best Version of Me journal summary with your self-compassion
+              reflection, ratings, feedback notes, self-reflection journal, and mindfulness practice.
             </p>
           </div>
           <button

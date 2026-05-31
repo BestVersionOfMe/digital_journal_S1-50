@@ -32,8 +32,8 @@ export function SelfAwarenessHeroBanner() {
 
       <div className="relative mx-auto max-w-6xl px-5 py-9 sm:px-10 sm:py-11 lg:px-14 lg:py-12">
         <div className="max-w-2xl">
-          <p className="font-display text-[0.68rem] font-bold uppercase tracking-[0.32em] text-bvm-title/80 sm:text-[0.72rem]">
-            Best Version of Me
+          <p className="font-display text-[0.68rem] font-bold uppercase tracking-[0.24em] text-bvm-title/80 sm:text-[0.72rem]">
+            Best Version of Me Journal
           </p>
           <h1
             id="sa-hero-title"
@@ -43,7 +43,8 @@ export function SelfAwarenessHeroBanner() {
           </h1>
           <p className="mt-4 max-w-[min(30rem,100%)] text-[clamp(0.9375rem,1.15vw+0.82rem,1.0625rem)] leading-[1.72] text-bvm-fg/80">
             <span className="text-pretty">
-              Self-awareness is understanding your thoughts, feelings, and behaviours.
+              A Global Community Sports workshop journal for understanding your thoughts,
+              feelings, and behaviours.
             </span>
           </p>
         </div>

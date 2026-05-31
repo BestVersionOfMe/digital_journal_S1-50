@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   STORAGE_KEY,
   cloneMeasuresForNextWeek,
@@ -9,12 +9,14 @@ import {
   isMeasureRatingComplete,
   legacyWordChoiceToLabel,
   mindfulnessSessionLabelFromIndex,
+  newFeedbackDraftRecordId,
   newMindfulnessSessionId,
   newReflectionWeekId,
   normalizeCustomWordPool,
   normalizeWordTokens,
   todayIsoDateLocal,
   weekLabelFromIndex,
+  type FeedbackDraftRecord,
   type JournalState,
   type MindfulnessPracticeRecord,
   type MindfulnessSessionRecord,
@@ -92,6 +94,22 @@ function newSkillRatingSnapshotId(): string {
     return crypto.randomUUID();
   }
   return `skill_rating_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+function sortFeedbackDraftRecords(records: FeedbackDraftRecord[]): FeedbackDraftRecord[] {
+  return [...records].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+function parseFeedbackDraftRecord(raw: unknown): FeedbackDraftRecord | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.id !== "string" || typeof o.draftText !== "string") return null;
+  return {
+    id: o.id,
+    createdAt: typeof o.createdAt === "string" ? o.createdAt : new Date().toISOString(),
+    draftText: o.draftText,
+    feelText: typeof o.feelText === "string" ? o.feelText : "",
+  };
 }
 
 /** Legacy single-entry shape */
@@ -200,7 +218,7 @@ function parseMindfulnessSession(raw: unknown, index: number): MindfulnessSessio
   };
 }
 
-function parseStored(raw: string | null): JournalState {
+export function parseJournalStateFromStorage(raw: string | null): JournalState {
   const base = defaultJournalState();
   if (!raw) return base;
   try {
@@ -285,7 +303,11 @@ function parseStored(raw: string | null): JournalState {
     if (Array.isArray(data.reflectionWeeks)) {
       reflectionWeeks = (data.reflectionWeeks as unknown[])
         .map(parseWeekBlock)
-        .filter((w): w is ReflectionWeekBlock => w != null);
+        .filter((w): w is ReflectionWeekBlock => w != null)
+        .map((week, index) => ({
+          ...week,
+          label: weekLabelFromIndex(index),
+        }));
     } else if (Array.isArray(data.reflectionMeasures)) {
       const parsed = (data.reflectionMeasures as unknown[])
         .map(parseMeasure)
@@ -329,6 +351,14 @@ function parseStored(raw: string | null): JournalState {
     let seekingFeedbackText = base.seekingFeedbackText;
     if (typeof data.seekingFeedbackText === "string") seekingFeedbackText = data.seekingFeedbackText;
 
+    const seekingFeedbackRecords = Array.isArray(data.seekingFeedbackRecords)
+      ? sortFeedbackDraftRecords(
+          (data.seekingFeedbackRecords as unknown[])
+            .map(parseFeedbackDraftRecord)
+            .filter((record): record is FeedbackDraftRecord => record != null),
+        )
+      : base.seekingFeedbackRecords;
+
     const mindfulnessSessions = Array.isArray(data.mindfulnessSessions)
       ? (data.mindfulnessSessions as unknown[])
           .map(parseMindfulnessSession)
@@ -345,6 +375,14 @@ function parseStored(raw: string | null): JournalState {
     } else if (typeof data.honestyGivingFeedbackText === "string") {
       givingFeedbackText = data.honestyGivingFeedbackText;
     }
+
+    const givingFeedbackRecords = Array.isArray(data.givingFeedbackRecords)
+      ? sortFeedbackDraftRecords(
+          (data.givingFeedbackRecords as unknown[])
+            .map(parseFeedbackDraftRecord)
+            .filter((record): record is FeedbackDraftRecord => record != null),
+        )
+      : base.givingFeedbackRecords;
 
     let seekingFeedbackSubmitted = base.seekingFeedbackSubmitted;
     if (typeof data.seekingFeedbackSubmitted === "boolean") {
@@ -372,8 +410,10 @@ function parseStored(raw: string | null): JournalState {
       mindfulnessSessions,
       seekingFeedbackText,
       seekingFeedbackSubmitted,
+      seekingFeedbackRecords,
       givingFeedbackText,
       givingFeedbackSubmitted,
+      givingFeedbackRecords,
     } satisfies JournalState;
   } catch {
     return base;
@@ -382,12 +422,29 @@ function parseStored(raw: string | null): JournalState {
 
 export function useJournalStorage() {
   const [state, setState] = useState<JournalState>(() => defaultJournalState());
+  const stateRef = useRef(state);
 
   useEffect(() => {
-    setState(parseStored(localStorage.getItem(STORAGE_KEY)));
+    const stored = parseJournalStateFromStorage(localStorage.getItem(STORAGE_KEY));
+    stateRef.current = stored;
+    setState(stored);
   }, []);
 
   const commit = useCallback((next: JournalState) => {
+    stateRef.current = next;
+    setState(next);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    }
+  }, []);
+
+  const updateStored = useCallback((updater: (prev: JournalState) => JournalState) => {
+    const latest =
+      typeof window !== "undefined"
+        ? parseJournalStateFromStorage(localStorage.getItem(STORAGE_KEY))
+        : stateRef.current;
+    const next = updater(latest);
+    stateRef.current = next;
     setState(next);
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
@@ -396,20 +453,18 @@ export function useJournalStorage() {
 
   const setRatings = useCallback(
     (updater: (r: Record<string, string | null>) => Record<string, string | null>) => {
-      setState((prev) => {
+      updateStored((prev) => {
         const next = { ...prev, ratings: updater(prev.ratings) };
-        if (typeof window !== "undefined") {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        }
+
         return next;
       });
     },
-    [],
+    [updateStored],
   );
 
   const saveSkillRatingSnapshot = useCallback((date: string = todayIsoDateLocal()) => {
     if (!isIsoDate(date)) return;
-    setState((prev) => {
+    updateStored((prev) => {
       const now = new Date().toISOString();
       const snapshot: SkillRatingSnapshot = {
         id: newSkillRatingSnapshotId(),
@@ -424,71 +479,59 @@ export function useJournalStorage() {
           ...prev.skillRatingSnapshots,
         ]),
       };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const removeSkillRatingSnapshot = useCallback((id: string) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const next = {
         ...prev,
         skillRatingSnapshots: prev.skillRatingSnapshots.filter((snapshot) => snapshot.id !== id),
       };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const setCompassion = useCallback(
     (updater: (c: Record<string, string>) => Record<string, string>) => {
-      setState((prev) => {
+      updateStored((prev) => {
         const next = { ...prev, compassion: updater(prev.compassion) };
-        if (typeof window !== "undefined") {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        }
+
         return next;
       });
     },
-    [],
+    [updateStored],
   );
 
   const setReflectionArea = useCallback((next: string) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const updated = { ...prev, reflectionArea: next };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      }
+
       return updated;
     });
-  }, []);
+  }, [updateStored]);
 
   const setReflectionScale = useCallback((next: JournalState["reflectionScale"]) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const updated = { ...prev, reflectionScale: next };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      }
+
       return updated;
     });
-  }, []);
+  }, [updateStored]);
 
   const setReflectionNumberValue = useCallback((next: number) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const updated = { ...prev, reflectionNumberValue: next };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      }
+
       return updated;
     });
-  }, []);
+  }, [updateStored]);
 
   const setReflectionWordTokens = useCallback((next: string[]) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const tokens = normalizeWordTokens(next);
       const updated = {
         ...prev,
@@ -498,40 +541,34 @@ export function useJournalStorage() {
           prev.reflectionCustomWordPool,
         ),
       };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      }
+
       return updated;
     });
-  }, []);
+  }, [updateStored]);
 
   const setReflectionCustomWordPool = useCallback((next: string[]) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const pool = normalizeCustomWordPool(next);
       const updated = {
         ...prev,
         reflectionCustomWordPool: ensureCustomPoolCoversSelections(prev.reflectionWordTokens, pool),
       };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      }
+
       return updated;
     });
-  }, []);
+  }, [updateStored]);
 
   const setReflectionEmojiIndex = useCallback((next: number) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const clamped = Math.max(0, Math.min(3, next));
       const updated = { ...prev, reflectionEmojiIndex: clamped };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      }
+
       return updated;
     });
-  }, []);
+  }, [updateStored]);
 
   const addReflectionMeasure = useCallback((measure: SelfReflectionMeasure) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const weeks = [...prev.reflectionWeeks];
       const activeIdx = weeks.findIndex((w) => !w.submitted);
       if (activeIdx === -1) {
@@ -547,15 +584,13 @@ export function useJournalStorage() {
         weeks[activeIdx] = { ...w, measures: [...w.measures, measure] };
       }
       const next = { ...prev, reflectionWeeks: weeks };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const removeReflectionMeasure = useCallback((id: string) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const next = {
         ...prev,
         reflectionWeeks: prev.reflectionWeeks.map((w) => ({
@@ -563,27 +598,23 @@ export function useJournalStorage() {
           measures: w.measures.filter((m) => m.id !== id),
         })),
       };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const removeReflectionWeek = useCallback((weekId: string) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const filtered = prev.reflectionWeeks.filter((w) => w.id !== weekId);
       const reflectionWeeks = filtered.map((w, i) => ({
         ...w,
         label: weekLabelFromIndex(i),
       }));
       const next = { ...prev, reflectionWeeks };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const updateReflectionMeasure = useCallback(
     (
@@ -595,7 +626,7 @@ export function useJournalStorage() {
         >
       >,
     ) => {
-      setState((prev) => {
+      updateStored((prev) => {
         const next = {
           ...prev,
           reflectionWeeks: prev.reflectionWeeks.map((w) => ({
@@ -632,33 +663,29 @@ export function useJournalStorage() {
             }),
           })),
         };
-        if (typeof window !== "undefined") {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        }
+
         return next;
       });
     },
-    [],
+    [updateStored],
   );
 
   const setReflectionWeekDate = useCallback((weekId: string, reflectionDate: string) => {
     if (!isIsoDate(reflectionDate)) return;
-    setState((prev) => {
+    updateStored((prev) => {
       const next = {
         ...prev,
         reflectionWeeks: prev.reflectionWeeks.map((w) =>
           w.id === weekId ? { ...w, reflectionDate } : w,
         ),
       };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const submitReflectionWeek = useCallback((weekId: string) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const idx = prev.reflectionWeeks.findIndex((w) => w.id === weekId);
       if (idx === -1) return prev;
       const week = prev.reflectionWeeks[idx]!;
@@ -679,15 +706,13 @@ export function useJournalStorage() {
         submitted: false,
       });
       const next = { ...prev, reflectionWeeks: weeks };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const addMindfulnessPractice = useCallback((practice: MindfulnessPracticeRecord, sessionId?: string) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const sessions = [...prev.mindfulnessSessions];
       const activeIdx = sessionId
         ? sessions.findIndex((session) => session.id === sessionId)
@@ -709,33 +734,29 @@ export function useJournalStorage() {
         };
       }
       const next = { ...prev, mindfulnessSessions: sessions };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const updateMindfulnessSessionFeel = useCallback(
     (sessionId: string, feelText: string) => {
-      setState((prev) => {
+      updateStored((prev) => {
         const next = {
           ...prev,
           mindfulnessSessions: prev.mindfulnessSessions.map((session) =>
             session.id === sessionId ? { ...session, feelText } : session,
           ),
         };
-        if (typeof window !== "undefined") {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        }
+
         return next;
       });
     },
-    [],
+    [updateStored],
   );
 
   const removeMindfulnessPractice = useCallback((id: string) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const next = {
         ...prev,
         mindfulnessSessions: prev.mindfulnessSessions.map((session) => ({
@@ -743,15 +764,13 @@ export function useJournalStorage() {
           practices: session.practices.filter((practice) => practice.id !== id),
         })),
       };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const removeMindfulnessSession = useCallback((sessionId: string) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const mindfulnessSessions = prev.mindfulnessSessions
         .filter((session) => session.id !== sessionId)
         .map((session, index) => ({
@@ -759,31 +778,27 @@ export function useJournalStorage() {
           label: mindfulnessSessionLabelFromIndex(index),
         }));
       const next = { ...prev, mindfulnessSessions };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const setMindfulnessSessionDate = useCallback((sessionId: string, practiceDate: string) => {
     if (!isIsoDate(practiceDate)) return;
-    setState((prev) => {
+    updateStored((prev) => {
       const next = {
         ...prev,
         mindfulnessSessions: prev.mindfulnessSessions.map((session) =>
           session.id === sessionId ? { ...session, practiceDate } : session,
         ),
       };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const submitMindfulnessSession = useCallback((sessionId: string) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const next = {
         ...prev,
         mindfulnessSessions: prev.mindfulnessSessions.map((session) =>
@@ -792,52 +807,114 @@ export function useJournalStorage() {
             : session,
         ),
       };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+
       return next;
     });
-  }, []);
+  }, [updateStored]);
 
   const setSeekingFeedbackText = useCallback((next: string) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const updated = { ...prev, seekingFeedbackText: next };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      }
+
       return updated;
     });
-  }, []);
+  }, [updateStored]);
 
   const setGivingFeedbackText = useCallback((next: string) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const updated = { ...prev, givingFeedbackText: next };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      }
+
       return updated;
     });
-  }, []);
+  }, [updateStored]);
 
   const setSeekingFeedbackSubmitted = useCallback((submitted: boolean) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const updated = { ...prev, seekingFeedbackSubmitted: submitted };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      }
+
       return updated;
     });
-  }, []);
+  }, [updateStored]);
 
   const setGivingFeedbackSubmitted = useCallback((submitted: boolean) => {
-    setState((prev) => {
+    updateStored((prev) => {
       const updated = { ...prev, givingFeedbackSubmitted: submitted };
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      }
+
       return updated;
     });
-  }, []);
+  }, [updateStored]);
+
+  const saveSeekingFeedbackRecord = useCallback((draftText: string, feelText: string) => {
+    const draft = draftText.trim();
+    const feel = feelText.trim();
+    if (!draft || !feel) return;
+    updateStored((prev) => {
+      const record: FeedbackDraftRecord = {
+        id: newFeedbackDraftRecordId(),
+        createdAt: new Date().toISOString(),
+        draftText: draft,
+        feelText: feel,
+      };
+      const updated = {
+        ...prev,
+        seekingFeedbackRecords: sortFeedbackDraftRecords([
+          record,
+          ...prev.seekingFeedbackRecords,
+        ]),
+        seekingFeedbackText: "",
+        seekingFeedbackSubmitted: false,
+      };
+
+      return updated;
+    });
+  }, [updateStored]);
+
+  const saveGivingFeedbackRecord = useCallback((draftText: string, feelText: string) => {
+    const draft = draftText.trim();
+    const feel = feelText.trim();
+    if (!draft || !feel) return;
+    updateStored((prev) => {
+      const record: FeedbackDraftRecord = {
+        id: newFeedbackDraftRecordId(),
+        createdAt: new Date().toISOString(),
+        draftText: draft,
+        feelText: feel,
+      };
+      const updated = {
+        ...prev,
+        givingFeedbackRecords: sortFeedbackDraftRecords([
+          record,
+          ...prev.givingFeedbackRecords,
+        ]),
+        givingFeedbackText: "",
+        givingFeedbackSubmitted: false,
+      };
+
+      return updated;
+    });
+  }, [updateStored]);
+
+  const removeSeekingFeedbackRecord = useCallback((id: string) => {
+    updateStored((prev) => {
+      const updated = {
+        ...prev,
+        seekingFeedbackRecords: prev.seekingFeedbackRecords.filter((record) => record.id !== id),
+      };
+
+      return updated;
+    });
+  }, [updateStored]);
+
+  const removeGivingFeedbackRecord = useCallback((id: string) => {
+    updateStored((prev) => {
+      const updated = {
+        ...prev,
+        givingFeedbackRecords: prev.givingFeedbackRecords.filter((record) => record.id !== id),
+      };
+
+      return updated;
+    });
+  }, [updateStored]);
 
   return {
     state,
@@ -868,5 +945,9 @@ export function useJournalStorage() {
     setGivingFeedbackText,
     setSeekingFeedbackSubmitted,
     setGivingFeedbackSubmitted,
+    saveSeekingFeedbackRecord,
+    saveGivingFeedbackRecord,
+    removeSeekingFeedbackRecord,
+    removeGivingFeedbackRecord,
   };
 }

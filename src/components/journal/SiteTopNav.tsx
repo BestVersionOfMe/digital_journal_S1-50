@@ -53,7 +53,7 @@ export function SiteTopNav() {
           <Link
             href="/"
             className="flex shrink-0 items-center"
-            aria-label="Global Community Sports home"
+            aria-label="Global Community Sports Best Version of Me journal home"
           >
             <Image
               src="/brand/global-community-sports-logo.png"
