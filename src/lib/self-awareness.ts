@@ -1,4 +1,4 @@
-/** Mirrors `bvm_journal/sections/self_awareness.py` — content + export shape. */
+/** Shared Self-Awareness content, state types, style constants, and report builders. */
 
 import type { SelfCompassionWorkshopSnapshot } from "@/lib/self-compassion-storage";
 
